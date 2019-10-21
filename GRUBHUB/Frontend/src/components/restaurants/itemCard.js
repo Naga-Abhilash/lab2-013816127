@@ -11,7 +11,7 @@ class ItemDisplay extends Component {
 
         let { itemId, itemName, itemPrice, itemImage, restId } = this.props.itemIndividual
         if (itemImage === "" || itemImage== null) {
-            itemImage = "biryani.jpg"
+            itemImage = "blankitem.jpg"
         }
         let unknown =  rootUrl+'/profile/download-file/' + itemImage
         let itemQuantity = ""

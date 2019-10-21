@@ -5,6 +5,7 @@ import {Link} from "react-router-dom"
 import NavBar from "../Navbar/navbar";
 import axios from 'axios';
 // import cookie from 'react-cookies';
+import swal from 'sweetalert'
 import {Redirect} from 'react-router';
 import rootUrl from "../config/settings";
 
@@ -74,7 +75,7 @@ submitSignup = (details) => {
                 this.setState({
                     authFlag : true
                 })
-            alert("Signup successfull! You can now login in to your account!")
+            swal("Signup successfull!"," You can now login in to your account!", "success")
             }
             console.log(this.state.authFlag)
         })
@@ -83,7 +84,7 @@ submitSignup = (details) => {
             this.setState({
                 authFlag : false
             });
-            alert("ERROR!!!")
+            swal("ERROR!!!","Failed to signup owner" ,"error")
             console.log(error);
             // alert("User credentials not valid. Please try again!");
         })

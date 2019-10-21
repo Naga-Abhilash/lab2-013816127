@@ -3,44 +3,49 @@ import React, { Component } from "react";
 import axios from 'axios'
 import ItemDetails from "./itemdetails";
 import rootUrl from "../../config/settings";
+import swal from 'sweetalert'
 
-class NewOrders extends Component{
-    constructor(props){
+class NewOrders extends Component {
+    constructor(props) {
         super(props)
-        this.state={
+        this.state = {
             orders: []
         }
-        this.handleAcceptedOrder=this.handleAcceptedOrder.bind(this)
-        this.handleRejectedOrder=this.handleRejectedOrder.bind(this)
+        this.handleAcceptedOrder = this.handleAcceptedOrder.bind(this)
+        this.handleRejectedOrder = this.handleRejectedOrder.bind(this)
     }
 
-    componentDidMount(){
+    componentDidMount() {
         console.log("Inside get order details afer component mount");
-        axios.get(rootUrl+"/orders/all-orders")
-            .then(response=>{
-                if(response.status===200){
-                console.log(response.data)
-                this.setState({
-                    orders: response.data
-                })
-                console.log("this state orders",typeof this.state.orders)
-             }
+        const data = {
+            userEmail: localStorage.getItem('userEmail')
+        }
+        axios.post(rootUrl + "/orders/all-orders", data)
+            .then(response => {
+                if (response.status === 200) {
+                    console.log(response.data)
+                    this.setState({
+                        orders: response.data
+                    })
+                    console.log("this state orders", typeof this.state.orders)
+                }
             })
     }
 
-    handleAcceptedOrder(orderId){
-        const data={
+    handleAcceptedOrder(orderId) {
+        const data = {
             orderId: orderId,
-            orderStatus: "preparing"
+            orderStatus: "preparing",
+            userEmail: localStorage.getItem('userEmail')
         }
-        console.log("data",data)
-        axios.put(rootUrl+'/orders/manage-orders',data)
+        console.log("data", data)
+        axios.put(rootUrl + '/orders/manage-orders', data)
             .then(response => {
-                console.log("inside success" )
-                console.log("Status Code : ",response.status);
-                if(response.status === 200){
-                    console.log("response",response.data)
-                    alert("success")
+                console.log("inside success")
+                console.log("Status Code : ", response.status);
+                if (response.status === 200) {
+                    console.log("response", response.data)
+                    swal("done", "Order Accepted", "success")
                     window.location.reload();
                 }
             })
@@ -52,19 +57,21 @@ class NewOrders extends Component{
 
     }
 
-    handleRejectedOrder(orderId){
-        const data={
+    handleRejectedOrder(orderId) {
+        const data = {
             orderId: orderId,
-            orderStatus: "cancelled"
+            orderStatus: "cancelled",
+            userEmail: localStorage.getItem('userEmail')
         }
-        console.log("data",data)
-        axios.put(rootUrl+'/manage-orders',data)
+        console.log("data", data)
+        axios.put(rootUrl + '/orders/manage-orders', data)
             .then(response => {
-                console.log("inside success" )
-                console.log("Status Code : ",response.status);
-                if(response.status === 200){
-                    console.log("response",response.data)
-                    alert("success")
+                console.log("inside success")
+                console.log("Status Code : ", response.status);
+                if (response.status === 200) {
+                    console.log("response", response.data)
+                    swal("done", "Order rejected", "success")
+
                     window.location.reload();
                 }
             })
@@ -76,36 +83,36 @@ class NewOrders extends Component{
 
     }
 
-    render(){
+    render() {
         let newOrderDetails;
-       
-        
+
+
         newOrderDetails = this.state.orders.map((order) => {
-           
+
             // i=i+1;
             // console.log("order status",order.userOrder[0].orderStatus)
-             if(order.userOrder[0].orderStatus==="New"){
+            if (order.userOrder[0].orderStatus === "New") {
                 return (
                     <div className="card">
-                    <div className="card-body">
-                        <h5 className="card-title">Customer name: {order.userOrder[0].userName} || Order Id: #{order.orderId}</h5>
-                        <h6 className="card-subtitle mb-2 text-muted">Customer Address: {order.userOrder[0].userAddress}</h6>
-                        <ItemDetails
-                        itemsInOrder={order.userOrder}/>
-                        <p className="card-text font-weight-bold text-muted">Order status: {order.userOrder[0].orderStatus}</p>
-                        <button className="btn btn-outline-success" onClick={() => this.handleAcceptedOrder(order.orderId)}>Accept</button>&nbsp;
+                        <div className="card-body">
+                            <h5 className="card-title">Customer name: {order.userOrder[0].userName} || Order Id: #{order.orderId}</h5>
+                            <h6 className="card-subtitle mb-2 text-muted">Customer Address: {order.userOrder[0].userAddress}</h6>
+                            <ItemDetails
+                                itemsInOrder={order.userOrder} />
+                            <p className="card-text font-weight-bold text-muted">Order status: {order.userOrder[0].orderStatus}</p>
+                            <button className="btn btn-outline-success" onClick={() => this.handleAcceptedOrder(order.orderId)}>Accept</button>&nbsp;
                         <button className="btn btn-outline-danger" onClick={() => this.handleRejectedOrder(order.orderId)}>Reject</button>
+                        </div>
                     </div>
-                    </div> 
                 )
-            } 
+            }
         })
-        return(
+        return (
             <div>
-                 
-                   {/* {UniqueOdrer} */}
-                   {newOrderDetails}
-                
+
+                {/* {UniqueOdrer} */}
+                {newOrderDetails}
+
             </div>
         )
     }

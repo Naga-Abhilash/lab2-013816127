@@ -4,7 +4,7 @@ import NewOrders from "./neworders";
 import PreparingOrders from "./preparingorders";
 import DeliveryOrders from "./deliveryorders";
 import PastOrders from "./pastorders";
-// import cookie from 'react-cookies';
+import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
 
 
@@ -47,9 +47,9 @@ class OwnerHome extends Component{
 
     render(){
         let redirectVar = null;
-        // if(!cookie.load('cookie')){
-        //     redirectVar = <Redirect to= "/login"/>
-        // }
+        if(!cookie.load('cookie')){
+            redirectVar = <Redirect to= "/login"/>
+        }
         // let redirectVar;
         if(localStorage.getItem("accountType")!=='2'){
             redirectVar = <Redirect to= "/login"/>

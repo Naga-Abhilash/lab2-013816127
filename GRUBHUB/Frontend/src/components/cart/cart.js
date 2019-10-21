@@ -4,8 +4,9 @@ import swal from 'sweetalert';
 import rootUrl from '../config/settings';
 import axios from 'axios'
 import CartCard from './cartCard'
+import cookie from 'react-cookies';
 import './cartCardcss.css'
-import {Redirect} from 'react-router';
+import { Redirect } from 'react-router';
 
 class Cart extends Component {
     constructor() {
@@ -16,7 +17,10 @@ class Cart extends Component {
         }
     }
     componentDidMount = () => {
-        axios.post(rootUrl + '/cart/showCart')
+        const data = {
+            userEmail: localStorage.getItem('userEmail')
+        }
+        axios.post(rootUrl + '/cart/showCart', data)
             .then(response => {
                 console.log(response)
                 if (response.status === 200) {
@@ -34,7 +38,10 @@ class Cart extends Component {
     }
 
     placeOrder = () => {
-        axios.post(rootUrl + '/orders/orderItems')
+        const data = {
+            userEmail: localStorage.getItem('userEmail')
+        }
+        axios.post(rootUrl + '/orders/orderItems', data)
             .then(response => {
                 console.log(response)
                 if (response.status === 200) {
@@ -53,7 +60,10 @@ class Cart extends Component {
     deleteFromCart = (itemId) => {
         console.log(itemId);
         const data = {
-            itemId: itemId
+            itemId: itemId,
+
+            userEmail: localStorage.getItem('userEmail')
+
         }
         axios.post(rootUrl + '/cart/deleteCartItem', data)
             .then(response => {
@@ -74,8 +84,12 @@ class Cart extends Component {
     }
     render() {
         let redirectVar;
-        if(localStorage.getItem("accountType")!=='1'){
-            redirectVar = <Redirect to= "/login"/>
+        if (localStorage.getItem("accountType") !== '1') {
+            redirectVar = <Redirect to="/login" />
+        }
+        
+        if (!cookie.load('cookie')) {
+            redirectVar = <Redirect to="/login" />
         }
         let cart = "";
         let route = '';

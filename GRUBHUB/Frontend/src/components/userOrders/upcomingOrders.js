@@ -3,6 +3,9 @@ import axios from 'axios'
 import rootUrl from '../config/settings';
 import Navbar from '../Navbar/navbar';
 import UniqueOrders from './uniqueOrders'
+import cookie from 'react-cookies';
+import { Redirect } from 'react-router';
+import draggable from 'react-draggable';
 
 class UpcomingOrders extends Component {
     constructor() {
@@ -13,7 +16,10 @@ class UpcomingOrders extends Component {
     }
 
     componentDidMount = () => {
-        axios.get(rootUrl + '/orders/upcomingOrders')
+        const data = {
+            userEmail: localStorage.getItem('userEmail')
+        }
+        axios.post(rootUrl + '/orders/upcomingOrders', data)
             .then(response => {
                 console.log(response.data)
                 if (response.status === 200) {
@@ -27,6 +33,10 @@ class UpcomingOrders extends Component {
                 }
             })
     }
+    messageOwner = () => {
+        console.log("In message owner method ");
+
+    }
     render() {
         let route = null
         let UniqueOdrer = ""
@@ -35,6 +45,13 @@ class UpcomingOrders extends Component {
             console.log("in ");
 
             route = JSON.parse(this.state.userOrders)
+        }
+        let redirectVar = null;
+        if (!cookie.load('cookie')) {
+            redirectVar = <Redirect to="/login" />
+        }
+        if (localStorage.getItem("accountType") !== '1') {
+            redirectVar = <Redirect to="/login" />
         }
         console.log("route : ", typeof route);
 
@@ -47,6 +64,8 @@ class UpcomingOrders extends Component {
                 return (
                     <UniqueOrders
                         key={i}
+                        
+                        messageowner={this.messageOwner.bind(this)}
                         orderIndividual={order}
                     />
                 )
@@ -54,6 +73,7 @@ class UpcomingOrders extends Component {
             return (
                 <div>
                     <Navbar />
+                    {redirectVar}
                     {UniqueOdrer}
                 </div>
             );
@@ -62,6 +82,7 @@ class UpcomingOrders extends Component {
             return (
                 <div>
                     <Navbar />
+                    {redirectVar}
                     <h6>You do not have any Upcoming orders</h6>
                 </div>
             )

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
 
-
+import Test from './testDrag/index'
 import LoginForm from '../components/Login/login';
 import CustomerSignUp from './Signup/customersignup'
 import OwnerSignUp from './Signup/ownersignup';
@@ -54,6 +54,8 @@ class MainRoutes extends Component {
                 <Route path="/cart" component={Cart} />
                 <Route path="/pastorders" component={PastOrders} />
                 <Route path="/upcomingorders" component={UpcomingOrders} />
+                <Route path="/test" component={Test} />
+
             </div>
         )
     }

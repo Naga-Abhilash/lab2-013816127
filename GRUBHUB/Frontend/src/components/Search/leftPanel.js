@@ -8,7 +8,7 @@ class LeftPanel extends Component {
     render() {
         return (
             <div>
-                <button onClick={() => this.props.visitCuisine(this.props.cuisineIndividual.cuisineName)} className="list-group-item list-group-item-action" >{this.props.cuisineIndividual.cuisineName} </button>
+                <button onClick={() => this.props.visitCuisine(this.props.cuisineIndividual)} className="list-group-item list-group-item-action" >{this.props.cuisineIndividual} </button>
             </div>
         );
     }

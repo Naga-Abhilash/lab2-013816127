@@ -1,5 +1,6 @@
 #past-orders{
     margin-left: 300px;
+    margin-top: 50px;
     /* max-width: 18rem; */
 }
 
@@ -20,4 +21,8 @@
 }
 #item-Total{
     margin-right: 50px;
+}
+#btn-left{
+    float: left;
+    margin-bottom: 0px;
 }

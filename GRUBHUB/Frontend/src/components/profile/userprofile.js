@@ -5,6 +5,8 @@ import * as Yup from "yup";
 import axios from 'axios';
 import '../../App.css';
 import rootUrl from "../config/settings";
+import { Redirect } from 'react-router';
+import cookie from 'react-cookies';
 // import cookie from 'react-cookies';
 // import {Redirect} from 'react-router';
 
@@ -32,7 +34,7 @@ const SignUpSchema = Yup.object().shape({
         .required("ZIP code is required")
 })
 var colors = {
-    color : "balck"
+    color: "balck"
 }
 
 class UserProfile extends Component {
@@ -64,7 +66,10 @@ class UserProfile extends Component {
         //set the with credentials to true
         axios.defaults.withCredentials = true;
         //make a post request with the user data
-        axios.get(rootUrl + '/profile/getprofile')
+        const data = {
+            userEmail: localStorage.getItem('userEmail')
+        }
+        axios.post(rootUrl + '/profile/getprofile', data)
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
@@ -81,10 +86,12 @@ class UserProfile extends Component {
                     });
                     console.log("state updated", this.state)
                     // if (response.data.userImage) {
-                        console.log("Profile image name", response.data.userImage);
+                    console.log("Profile image name", response.data.userImage);
+                    if (response.data.userImage) {
                         this.setState({
                             profileImagePreview: rootUrl + "/profile/download-file/" + response.data.userImage
                         })
+                    }
                     // }
                     //Download image
                     // axios.get('http://localhost:3001/profile/download-file/' + response.data.userImage)
@@ -121,7 +128,7 @@ class UserProfile extends Component {
                         console.log('Profile Photo Name: ', profilePhoto.name);
                         this.setState({
                             profileImage: profilePhoto.name,
-                            // profileImagePreview: rootUrl+"/profile/download-file/" + profilePhoto.name
+                            profileImagePreview: rootUrl + "/profile/download-file/" + profilePhoto.name
                         })
                         //Download image
                         // axios.post('http://localhost:3001/profile/download-file/' + profilePhoto.name)
@@ -160,13 +167,13 @@ class UserProfile extends Component {
     submitProfile = (details) => {
         console.log("Inside profile update", details);
         const data = {
-            userEmail: details.email,
             userPassword: details.password,
             userName: details.userName,
             userPhone: details.userPhone,
             userAddress: details.userAddress,
             userZip: details.userZip,
-            userImage: this.state.profileImage
+            userImage: this.state.profileImage,
+            userEmail: localStorage.getItem('userEmail')
         }
         //set the with credentials to true
         axios.defaults.withCredentials = true;
@@ -205,18 +212,24 @@ class UserProfile extends Component {
 
 
     render() {
+        let redirectVar = null;
+        if (!cookie.load('cookie')) {
+            redirectVar = <Redirect to="/login" />
+        }
         console.log("profile image preview", this.state.profileImagePreview)
         let profileImageData = <img src="https://img.freepik.com/free-icon/user-filled-person-shape_318-74922.jpg?size=338c&ext=jpg" alt="logo" />
         if (this.state.profileImagePreview) {
             profileImageData = <img src={this.state.profileImagePreview} alt="logo" />
         }
+
         return (
             <div className="row">
+                {redirectVar}
                 <div className="col-md-7">
                     <span className="font-weight-bold">Your account</span>
                     {/* <button className="btn btn-link" id="btn-edit" onClick={this.edit}>Edit</button> */}
                     &nbsp;&nbsp;&nbsp;
-                <a className="nav-link-inline" id="btn-edit" style = {colors}href="#edit" onClick={this.editProfile}>Edit</a>
+                <a className="nav-link-inline" id="btn-edit" style={colors} href="#edit" onClick={this.editProfile}>Edit</a>
                     <Formik
                         enableReinitialize
                         initialValues={

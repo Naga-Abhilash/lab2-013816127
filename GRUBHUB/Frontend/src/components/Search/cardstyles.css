@@ -1,7 +1,25 @@
 
+.pagination {
+    margin-top: 25px;
+}
+.pagination span{
+  cursor: pointer;
+  color: black;
+  float: left;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: background-color .3s;
+  border: 1px solid #ddd;
+}
+
+.pagination span.active {
+  background-color: #0099FF;
+  color: white;
+  border: 1px solid #0099FF;
+}
 
 .cardclass{
-    /* height: 370px; */
+    height: 345px;
     width: 230px;
 }
 
@@ -21,6 +39,7 @@ a {
 
 #btn-rest-visit{
     width: 100%;
+    /* float: bottom; */
 }
 #card-title {
     color: black;

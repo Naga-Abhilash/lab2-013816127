@@ -94,7 +94,8 @@ class RestaurantHome extends Component {
             itemId: itemId,
             restId: restId,
             itemQuantity: itemQuantity,
-            itemTotal: itemTotal
+            itemTotal: itemTotal,
+            userEmail: localStorage.getItem('userEmail')
         }
         console.log(data);
         if (itemQuantity > 0) {
@@ -208,7 +209,7 @@ class RestaurantHome extends Component {
             })
             let { restName, restImage, restAddress, restPhone } = this.state.itemsByRestaurant[0];
             if (restImage === "" || restImage === null) {
-                restImage = "biryani.jpg"
+                restImage = "restaurant.jpg"
             }
             let unknown = rootUrl+'/profile/download-file/' + restImage
             // let resimg = new Image();

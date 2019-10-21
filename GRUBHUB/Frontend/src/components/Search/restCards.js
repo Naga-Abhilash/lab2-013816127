@@ -21,7 +21,7 @@ class restCard extends Component {
     render() {
         let {restId, restImage, restName, restDesc } = this.props.restIndividual;
         if (restImage === "" || restImage===null){
-            restImage = "biryani.jpg"
+            restImage = "restaurant.jpg"
         }
         let unknown =  rootUrl+'/profile/download-file/' + restImage
 

@@ -3,6 +3,8 @@ import NavBar from "../Navbar/navbar";
 import Items from "./items";
 import Sections from "./sections";
 import AddItems from "./additem";
+import { Redirect } from 'react-router';
+import cookie from 'react-cookies';
 
 class Menu extends Component {
     constructor() {
@@ -55,9 +57,14 @@ class Menu extends Component {
             document.getElementById('pastorders').style.color = ''
             document.getElementById('additems').style.color = 'black'
         }
+        let redirectVar = null;
+        if (!cookie.load('cookie')) {
+            redirectVar = <Redirect to="/login" />
+        }
         return (
             <div>
                 <NavBar />
+                {redirectVar}
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-md-3">

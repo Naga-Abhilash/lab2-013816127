@@ -49,7 +49,8 @@ class Home extends Component {
         e.preventDefault()
 
         const data = {
-            itemName: this.state.itemSearch
+            itemName: this.state.itemSearch,
+            userEmail: localStorage.getItem('userEmail')
         }
         console.log(data.itemName)
         axios.post(rootUrl + '/restaurant/restaurantsbyItemName', data)
