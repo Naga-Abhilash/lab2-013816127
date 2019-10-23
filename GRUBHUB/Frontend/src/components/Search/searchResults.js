@@ -78,7 +78,7 @@ class searchResults extends Component {
                 let totalRest = restByPages.length
                 console.log(totalRest);
 
-                let pagerest = new Array(Math.floor(totalRest/ 3)+1)
+                let pagerest = new Array(Math.floor(totalRest / 3) + 1)
 
                 for (let i = 0; i < pagerest.length; i++) {
                     pagerest[i] = new Array(3);
@@ -90,13 +90,13 @@ class searchResults extends Component {
                         if (restByPages[h]) {
                             pagerest[i][j] = restByPages[h++];
                             console.log(h);
-                            
+
                         }
                     }
                     console.log(pagerest[i]);
 
                 }
-                
+
                 this.setState({
                     restCuisinePages: pagerest,
                     restCuisineResults: restDetails
