@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const URI =
-  "mongodb+srv://admin:grubhub_mongo@grubhubdb-jdd7i.mongodb.net/test?retryWrites=true&w=majority";
+  "mongodb+srv://root:12345@grubhub-opt6f.mongodb.net/test?retryWrites=true&w=majority";
 
 const connectDB = async () => {
   try {
