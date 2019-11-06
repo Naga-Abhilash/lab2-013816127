@@ -1,7 +1,4 @@
 import React, { Component } from "react";
-// import NavBar from "../../Navbar/navbar";
-import logo from '../../images/login-page-burger.png'
-// import EditItem from "./edititem";
 import { Link } from 'react-router-dom'
 import axios from 'axios';
 import rootUrl from "../config/settings";
