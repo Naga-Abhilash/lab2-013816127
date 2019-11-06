@@ -32,7 +32,7 @@
 .fit-image{
   width: 760px;
   object-fit: fill;
-  height: 800px; /* only if you want fixed height */
+  height: 720px; /* only if you want fixed height */
   }
 
 
@@ -49,7 +49,7 @@
 } */
 
 
-#btn-submit-profile,#btn-submit-restaurant,#btn-cancel-profile,#btn-cancel-restaurant{
+#btn-submit-profile,#btn-submit-restaurant,#btn-cancel-profile,#btn-cancel-restaurant,#profileImage,#restImages{
   visibility: hidden
 }
 
@@ -240,7 +240,13 @@
   color: black;
 }
 
+/* .text-left{
+  color: black;
+  /* margin-right: 50px; */
+  /* float: left; */
+/* }  */
 .text-phone{
   color: black;
   /* margin-left: 000px; */
 }
+

@@ -1,14 +1,14 @@
-import { SIGNUP } from '../actions/index';
-import {AUTH_LOGIN_USER_PRESENT} from '../actions/index';
+import { AUTH_SIGNUP } from '../actions/signupAction';
+import { AUTH_LOGIN_USER_PRESENT } from '../actions/signupAction';
 
-var initialState = {
-    duplicateUser :false
-}
+// var initialState = {
+//     duplicateUser :false
+// }
 
-export default function (state = initialState, action) {
+export default function (state = {}, action) {
 
     switch (action.type) {
-        case SIGNUP:
+        case AUTH_SIGNUP:
             console.log('Inside Reducer', action.payload);
             return {
                 ...state,
@@ -16,11 +16,11 @@ export default function (state = initialState, action) {
             }
         case AUTH_LOGIN_USER_PRESENT:
             console.log('Inside reducer AUTH_LOGIN_USER_PRESENT');
-            return{
+            return {
                 ...state,
-                duplicateUser : true
-            }        
-        
+                duplicateUser: true
+            }
+
         default:
             return state;
     }

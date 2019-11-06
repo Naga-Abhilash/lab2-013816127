@@ -3,10 +3,14 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
 import logo from '../../images/login-page.jpg'
-import axios from 'axios';
-import cookie from 'react-cookies';
+// import axios from 'axios';
+// import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
-import rootUrl from '../config/settings'
+// import rootUrl from '../config/settings';
+// import swal from "sweetalert";
+
+import { connect } from 'react-redux';
+import { submitLogin } from '../../redux/actions/loginAction'
 
 const LoginSchema = Yup.object().shape({
     email: Yup.string()
@@ -34,49 +38,38 @@ class LoginForm extends Component {
             userEmail: details.email,
             userPassword: details.password
         }
-        //set the with credentials to true
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        axios.post(rootUrl + '/login', data)
-            .then(response => {
-                console.log("inside success")
-                console.log("Status Code : ", response.status);
-                if (response.status === 200) {
-                    console.log("response", response.data)
-                    localStorage.setItem("accountType", response.data.accountType)
-                    localStorage.setItem("userName", response.data.userName)
-                    localStorage.setItem("userEmail", response.data.userEmail)
-                    this.setState({
-                        authFlag: true
-                    })
-                    // alert("success")
-                    // console.log(response)
-                }
-                console.log(this.state.authFlag)
-            })
-            .catch(error => {
-                console.log("In error");
-                this.setState({
-                    authFlag: "false"
-                });
-                console.log(error);
-                alert("User credentials not valid. Please try again!");
-            })
+        this.props.submitLogin(data);
     }
 
 
     render() {
         // console.log("test cookie",cookie.load('username-localhost-8888'))
         let redirectVar = null;
-        if (cookie.load('cookie')) {
-            // if(this.state.authFlag===true){
-
-            if (localStorage.getItem("accountType") === "2") {
-                redirectVar = <Redirect to="/ownerhome" />
+        if (this.props.loginStateStore.result) {
+            console.log("testing", this.props.loginStateStore.result.isAuthenticated)
+            if (this.props.loginStateStore.result.isAuthenticated === false) {
+                console.log("In error");
             }
-            else if (localStorage.getItem("accountType") === "1") {
-                console.log('hello')
-                redirectVar = <Redirect to="/userhome" />
+            else {
+                // if(cookie.load('cookie')){           
+                // if(localStorage.getItem("accountType")==="2"){
+                //      redirectVar = <Redirect to= "/ownerhome"/>
+                // }
+                // else if(localStorage.getItem("accountType")==="1"){
+                //      redirectVar = <Redirect to="/userhome"/>
+                // }
+                //     }
+                // if(localStorage.getItem('token')){
+                console.log("near accounttype check")
+                if (localStorage.getItem("accountType") === "2") {
+                    console.log("redirecting to owner home")
+                    redirectVar = <Redirect to="/ownerhome" />
+                }
+                else if (localStorage.getItem("accountType") === "1") {
+                    console.log("redirecting to user home")
+                    redirectVar = <Redirect to="/userhome" />
+                }
+                // }
             }
         }
         return (
@@ -137,8 +130,8 @@ class LoginForm extends Component {
                                             <br />
                                             <button
                                                 type="submit"
-                                                // id="signin"
-                                                className="btn btn-success btn-block text-white font-weight-bold"
+                                                id="signin"
+                                                className="btn btn-block text-white font-weight-bold"
                                             // disabled={!isSubmitting}
                                             >
                                                 {/* {isSubmitting ? "Please wait..." : "Sign in"} */}
@@ -162,6 +155,20 @@ class LoginForm extends Component {
 }
 
 
-export default LoginForm;
+// export default LoginForm;
+
+const mapStateToProps = (state) => ({
+
+    loginStateStore: state.login
+})
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        submitLogin: (username, password) => dispatch(submitLogin(username, password))
+    };
+}
+
+const updatedLogin = connect(mapStateToProps, mapDispatchToProps)(LoginForm)
+export default updatedLogin;
 
 

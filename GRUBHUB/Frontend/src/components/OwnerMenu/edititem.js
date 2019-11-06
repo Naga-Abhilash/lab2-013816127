@@ -5,6 +5,8 @@ import axios from 'axios';
 import NavBar from "../Navbar/navbar";
 import rootUrl from "../config/settings";
 import swal from "sweetalert";
+// import cookie from 'react-cookies';
+import { Redirect } from 'react-router';
 
 
 const Price = /^\d+(,\d{3})*(\.\d{1,2})?$/
@@ -27,7 +29,7 @@ class EditItem extends Component {
         super(props)
         console.log(props.location.item)
         this.state = {
-            itemId: props.location.item.itemId,
+            itemId: props.location.item._id,
             itemName: props.location.item.itemName,
             itemType: props.location.item.itemType,
             itemPrice: props.location.item.itemPrice,
@@ -49,7 +51,7 @@ class EditItem extends Component {
             itemDesc: details.itemDesc,
             itemImage: this.state.itemImage,
             cuisineName: details.cuisineName,
-            userEmail: localStorage.getItem('userEmail')
+            userEmail: localStorage.getItem("userEmail")
             //    itemImage:"",
             //    itemImagePreview:""
         }
@@ -57,23 +59,27 @@ class EditItem extends Component {
         //set the with credentials to true
         axios.defaults.withCredentials = true;
         //make a post request with the user data
-        axios.post(rootUrl + '/restaurant/updateitem', data)
+        axios.post(rootUrl + '/updateitem', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
                 if (response.status === 200) {
                     console.log("success", response)
-                    swal("Done", "Successfully updated item", "success")
-                    window.location.reload();
+                    this.setState({
+                        itemUpdated: true
+                    })
+                    // alert("success")
+                    swal("Success", "Item details updated", "success");
                     // console.log(response)
                 }
             })
             .catch(error => {
                 console.log("In error");
                 console.log(error);
-                swal("Failed", "Update failed! Please try again", "error")
-                window.location.reload();
-
+                swal("Oops...", "Something went wrong! Please try again later", "error");
+                // alert("Update failed! Please try again")
             })
     }
 
@@ -87,13 +93,13 @@ class EditItem extends Component {
             var data = new FormData();
             data.append('photos', profilePhoto);
             axios.defaults.withCredentials = true;
-            axios.post(rootUrl + '/profile/upload-file', data)
+            axios.post(rootUrl + '/upload-file', data)
                 .then(response => {
                     if (response.status === 200) {
                         console.log('Item Photo Name: ', profilePhoto.name);
                         this.setState({
                             itemImage: profilePhoto.name,
-                            itemImagePreview: rootUrl + '/profile/download-file/' + profilePhoto.name
+                            itemImagePreview: rootUrl + '/download-file/' + profilePhoto.name
                         })
                     }
                 });
@@ -102,12 +108,23 @@ class EditItem extends Component {
 
 
     render() {
+        let redirectVar;
+        if (localStorage.getItem("accountType") !== '2') {
+            redirectVar = <Redirect to="/login" />
+        }
+        if (!localStorage.getItem('token')) {
+            redirectVar = <Redirect to="/login" />
+        }
         let itemImageData = <img src="https://mk0tarestaurantt3wcn.kinstacdn.com/wp-content/uploads/2018/01/premiumforrestaurants_0.jpg" alt="logo" />
         if (this.state.itemImage) {
-            itemImageData = <img src={rootUrl + '/profile/download-file/' + this.state.itemImage} alt="logo" />
+            itemImageData = <img src={rootUrl + '/download-file/' + this.state.itemImage} alt="logo" />
+        }
+        if (this.state.itemUpdated === true) {
+            redirectVar = <Redirect to='/menu' />
         }
         return (
             <div>
+                {redirectVar}
                 <NavBar />
                 <div className="row">
 

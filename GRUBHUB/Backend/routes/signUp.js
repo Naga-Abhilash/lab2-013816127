@@ -10,7 +10,7 @@ app.post('/customerSignup', (req, res) => {
     console.log(req.body);
 
     //Hashing Password
-    const hashedPassword = bcrypt.hashSync(req.body.userPassword, 10);
+    const hashedPassword = bcrypt.hashSync(req.body.userPassword);
     // console.log("hashed pwd",hashedPassword)
 
     //query
@@ -87,7 +87,7 @@ app.post('/ownerSignup', (req, res) => {
                         res.status(401).end("Duplicate Restaurant name within same location");
                     } else {
                         //Hashing Password!
-                        const hashedPassword = bcrypt.hashSync(req.body.userPassword, 10);
+                        const hashedPassword = bcrypt.hashSync(req.body.userPassword);
                         console.log("New Restaurant");
                         const sql2 = "INSERT into users (userName, userEmail, userPassword, userPhone, userAddress, userZip, accountType) VALUES (" +
                             mysql.escape(req.body.userName) + "," +
@@ -140,12 +140,13 @@ app.post('/ownerSignup', (req, res) => {
                                                         console.log(result);
                                                         console.log("userId created");
 
-                                                        const sql4 = "INSERT into restaurants (userId, restName, restAddress, restZip, restPhone) VALUES ( " +
+                                                        const sql4 = "INSERT into restaurants (userId, restName, restAddress, restZip, restPhone, restDesc) VALUES ( " +
                                                             result[0].userId + "," +
                                                             mysql.escape(req.body.restName) + "," +
                                                             mysql.escape(req.body.restAddress) + "," +
                                                             mysql.escape(req.body.restZip) + "," +
-                                                            mysql.escape(req.body.restPhone) +
+                                                            mysql.escape(req.body.restPhone) + "," +
+                                                            mysql.escape(req.body.restDesc) +
                                                             ");";
 
                                                         console.log(sql4);

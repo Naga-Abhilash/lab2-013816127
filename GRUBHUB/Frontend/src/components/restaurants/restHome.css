@@ -89,7 +89,7 @@ a {
     top: 400px;
     left: 1px;
     background-color: white;
-    padding-bottom: 1000px;
+    padding-bottom: 500px;
 }
 
 #right-items {
@@ -100,7 +100,6 @@ a {
     top: 400px;
     right: 1px;
     background-color: white;
-    padding-bottom: 300px;
 }
 
 #rest-title{
@@ -125,6 +124,7 @@ a {
 }
 #container {
   position: relative;
+  
   color: white;
 }
 

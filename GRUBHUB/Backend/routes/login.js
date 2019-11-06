@@ -1,68 +1,31 @@
-const express = require('express');
-const pool = require('../configFiles/connectionPooling');
-var mysql = require('mysql');
-const bcrypt = require('bcrypt-nodejs');
+const express = require("express");
+const router = express.Router();
+var kafka = require("../kafka/client");
 
-const app = express.Router();
+//Passport authentication
+var passport = require('passport');
+var jwt = require('jsonwebtoken');
+const secret = "secret";
+var requireAuth = passport.authenticate('jwt', { session: false });
 
-//login
-app.post('/login', (req, res) => {
-    console.log("In login post");
-    console.log(req.body);
+router.post("/login", (req, res) => {
+    console.log("Inside login Post Request");
+    console.log("Req Body : ", req.body);
 
-    //connection
-    pool.getConnection((err, conn) => {
+    kafka.make_request("login_topic", req.body, function (err, results) {
+        console.log("in make request call back");
+        console.log(results);
+        console.log(err);
         if (err) {
-            console.log("Error while connecting to database");
-            res.writeHead(500, {
-                'Content-type': 'text/plain'
-            });
-            res.end("Error while connecting to database");
+            console.log("Inside err");
+            console.log(err);
+            return res.status(err.status).send(err.message);
         } else {
-
-            //query
-            const sql = `SELECT * from users where userEmail= ${mysql.escape(req.body.userEmail)} 
-            AND userPassword = ${mysql.escape(req.body.userPassword)}`;
-            console.log(sql);
-
-
-            conn.query(sql, (err, result) => {
-                if (err) {
-                    res.writeHead(400, {
-                        'Contnet-type': 'text/plain'
-                    });
-                    res.end("Invalid credentials");
-                } else {
-                    if (result.length == 0 || !bcrypt.compareSync(req.body.userPassword, result[0].userPassword)) {//|| !bcrypt.compareSync(req.body.userPassword, result[0].userPassword))
-                        res.writeHead(402, {
-                            'Content-type': 'text/plain'
-                        });
-                        console.log("Invalid credentials");
-                        res.end("Invalid credentials");
-                    } else {
-                        console.log(result);
-                        console.log("local Storage: ", req.session.userEmail);
-
-                        res.cookie('cookie', result[0].userEmail, {
-                            maxAge: 360000,
-                            httpOnly: false,
-                            path: '/'
-                        });
-                        //console.log("res.cookie",res.cookie);
-
-                        req.session.userEmail = result[0].userEmail;
-                        console.log("req.session.userEmail" + req.session.userEmail);
-                        res.writeHead(200, {
-                            'Content-type': 'text/plain'
-                        });
-                        // res.send(result[0].accountType)
-                        res.end(JSON.stringify(result[0]));
-                        console.log("Login successful");
-                    }
-                }
-            });
+            console.log("Inside else");
+            console.log(results);
+            return res.status(results.status).send(results.data);
         }
     });
 });
 
-module.exports = app;
+module.exports = router;

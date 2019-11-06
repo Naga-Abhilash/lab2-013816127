@@ -1,35 +1,36 @@
-import React,{ Component } from "react";
+import React, { Component } from "react";
 
-class ItemDetails extends Component{
+class ItemDetails extends Component {
     // constructor(props){
     //     super(props)
     // }
-    render(){
-        let item = this.props.itemsInOrder
+    render() {
+        console.log("items in order", this.props.itemsInOrder.items)
+        let item = this.props.itemsInOrder.items
         let orderTotal = 0;
         console.log("item in itemorders file:", item);
-        let itemDetails=item.map((i) => {
-            console.log("i",i)
+        let itemDetails = item.map((i) => {
+            console.log("i", i)
             orderTotal += i.itemTotal;
-        let {  itemName, itemQuantity, itemPrice, itemTotal } = i;
+            let { itemName, itemQuantity, itemPrice, itemTotal } = i;
+            return (
+                <div>
+                    <div>
+                        <span>
+                            <h5 className="item-name">{itemName}</h5>
+                            <p className="item-price" >Cost: ${itemPrice}</p>
+                            <p className="item-quantity" >Quantity: {itemQuantity}</p>
+                            <p className="item-total" > Total: ${itemTotal}</p>
+                        </span>
+                    </div>
+                </div>
+            );
+        })
         return (
             <div>
-                <div>
-                    <span>
-                        <h5 className="item-name">{itemName}</h5>
-                        <p className="item-price" >Cost: ${itemPrice}</p>
-                        <p className="item-quantity" >Quantity: {itemQuantity}</p>
-                        <p className="item-total" > Total: ${itemTotal}</p>
-                    </span>
-                </div>
-            </div>
-        );
-    })
-    return (
-    <div>
-        {itemDetails}
-        <p className="card-text font-weight-bold">Order Total: {orderTotal}</p>
-    </div>)
-}
+                {itemDetails}
+                <p className="card-text font-weight-bold">Order Total: {orderTotal}</p>
+            </div>)
+    }
 }
 export default ItemDetails;

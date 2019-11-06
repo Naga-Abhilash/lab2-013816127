@@ -1,43 +1,49 @@
 
 import React, { Component } from 'react';
 import './cardstyles.css';
-import {Redirect} from 'react-router-dom'
-import axios from 'axios'
-import logo from '../../images/login-page-burger.png'
+// import {Redirect} from 'react-router-dom'
+// import axios from 'axios'
+// import logo from '../../images/login-page-burger.png'
 import rootUrl from '../config/settings';
-import './cardstyles.css'
+import rest_image from "../../images/restaurant_defaultimage.jpg"
 
 // var images = require.context('../../../../backend/uploads/', true);
 let redirectVar = null;
 class restCard extends Component {
     constructor(props) {
         super(props);
-        this.state={
-           photos: []
-           }
     }
 
-    
-    render() {
-        let {restId, restImage, restName, restDesc } = this.props.restIndividual;
-        if (restImage === "" || restImage===null){
-            restImage = "restaurant.jpg"
-        }
-        let unknown =  rootUrl+'/profile/download-file/' + restImage
 
-        
+    render() {
+        let unknown;
+        let { _id, restImage, restName, restDesc } = this.props.restIndividual.restaurant;
+        if (restImage) {
+            unknown =
+                <img src={rootUrl + '/download-file/' + restImage} className="card-img-top" id="card-img-top" alt="..." />
+        }
+        else {
+            unknown =
+                <img src={rest_image} className="card-img-top" id="card-img-top" alt="..." />
+        }
+        // let profileImageData = <img src={logo} className="card-img-top" alt="..."/>
+        // if (this.state.photos[this.props.key]) {
+        //     profileImageData = <img src={this.state.photos[this.props.key]} className="card-img-top img-responsive fit-image" id="itemimage" alt="..."/>
+        // }
+
+
         return (
             <div>
-                
-                <div className= "restRight" >
-                    <div className = "col-md-3 col-sm-6">
+
+                <div className="restRight" >
+                    <div className="col-md-3 col-sm-6">
                         <div className="card cardclass" id="cardclass" >
-                            <img src={unknown} className="card-img-top" id="card-img-top" alt="..."/>
+                            {unknown}
                             {/* {profileImageData} */}
-                            <div className="card-block" id = "card-title-text">
+                            <div className="card-block" id="card-title-text">
                                 <h4 className="card-title" id="card-title">{restName}</h4>
                                 <p className="card-text" id="card-text">{restDesc} </p>
-                                <button id="btn-rest-visit" onClick={() => this.props.visitRest(restId)} className="btn btn-primary">Visit Restaurant</button>
+                                <button id="btn-rest-visit" onClick={() => this.props.visitRest(_id)} className="btn btn-primary">Visit Restaurant</button>
                             </div>
                         </div>
                     </div>

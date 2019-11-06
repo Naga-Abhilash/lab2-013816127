@@ -4,10 +4,14 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from 'axios';
 import rootUrl from "../config/settings";
+import swal from "sweetalert";
+import user_image from "../../images/user_defaultimage.png"
+import rest_image from "../../images/restaurant_defaultimage.jpg"
 // import cookie from 'react-cookies';
-import {Redirect} from 'react-router';
-import cookie from 'react-cookies';
+// import {Redirect} from 'react-router';
 
+import { connect } from 'react-redux';
+import { getProfile, updateProfile } from '../../redux/actions/profileAction'
 
 const phoneRegExp = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/
 const zipRegEx = /^[0-9]{5}(?:-[0-9]{4})?$/
@@ -66,79 +70,34 @@ class OwnerProfile extends Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
-    componentDidMount() {
-        console.log("Inside get profile after component did mount");
-        //set the with credentials to true
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        const data = {
-            userEmail: localStorage.getItem('userEmail')
+    async componentDidMount() {
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/profile/getprofile', data)
-            .then(response => {
-                console.log("inside success")
-                console.log("Status Code : ", response.status);
-                if (response.status === 200) {
-                    console.log("response", response.data)
-                    this.setState({
-                        userEmail: response.data[0].userEmail,
-                        userName: response.data[0].userName,
-                        userPhone: response.data[0].userPhone,
-                        password: response.data[0].userPassword,
-                        profileImage: response.data[0].userImage,
-                        //   userAdr: response.data[0].userAddress,
-                        //   userZip: response.data[0].userZip,
-                        restName: response.data[1].restName,
-                        restDesc: response.data[1].restDesc,
-                        restAdr: response.data[1].restAddress,
-                        restZip: response.data[1].restZip,
-                        restPhone: response.data[1].restPhone,
-                        restImage: response.data[1].restImage
-                    });
-                    console.log("state updated", this.state)
-                    console.log("Profile image name", response.data[0].userImage);
-                    if (response.data[0].userImage) {
-                        this.setState({
-                            profileImagePreview: rootUrl + '/profile/download-file/' + response.data[0].userImage
+        console.log("Inside get profile after component did mount");
+        await this.props.getProfile(data)
 
-                        })
-                    }
-                    if (response.data[1].restImage) {
-                        this.setState({
-                            restImagePreview: rootUrl + '/profile/download-file/' + response.data[1].restImage
+        console.log("this.props.profileStateStore", this.props.profileStateStore.result)
+        if (this.props.profileStateStore.result) {
+            console.log("hi")
+            this.setState({
+                userName: this.props.profileStateStore.result.userName,
+                userEmail: this.props.profileStateStore.result.userEmail,
+                // password: this.props.profileStateStore.result.password,
+                userPhone: this.props.profileStateStore.result.userPhone,
+                profileImage: this.props.profileStateStore.result.profileImage,
+                profileImagePreview: this.props.profileStateStore.result.profileImagePreview,
 
-                        })
-                    }
-                    //Download image
-                    //   axios.post('http://localhost:3001/profile/download-file/' + response.data[0].userImage)
-                    //       .then(response => {
-                    //           let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                    //           this.setState({
-                    //               profileImagePreview: imagePreview
-                    //           })
-
-                    //       });
-                    //  axios.post('http://localhost:3001/profile/download-file/' + response.data[1].restImage)
-                    //       .then(response => {
-                    //           let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                    //           this.setState({
-                    //               restImagePreview: imagePreview
-                    //           })
-
-                    //       });
-                }
-
-                // sessionStorage.setItem(response.data)
-                // console.log(this.state.authFlag)
+                restName: this.props.profileStateStore.result.restName,
+                restDesc: this.props.profileStateStore.result.restDesc,
+                restAdr: this.props.profileStateStore.result.restAdr,
+                restZip: this.props.profileStateStore.result.restZip,
+                restPhone: this.props.profileStateStore.result.restPhone,
+                restImage: this.props.profileStateStore.result.restImage,
+                restImagePreview: this.props.profileStateStore.result.restImagePreview
             })
-            .catch(error => {
-                console.log("In error");
-                // this.setState({
-                //     authFlag : "false"
-                // });
-                console.log(error);
-                // alert("User credentials not valid. Please try again!");
-            })
+        }
+
     }
 
 
@@ -153,28 +112,14 @@ class OwnerProfile extends Component {
             var data = new FormData();
             data.append('photos', profilePhoto);
             axios.defaults.withCredentials = true;
-            axios.post(rootUrl + '/profile/upload-file', data)
+            axios.post(rootUrl + '/upload-file', data)
                 .then(response => {
                     if (response.status === 200) {
                         console.log('Profile Photo Name: ', profilePhoto.name);
                         this.setState({
                             profileImage: profilePhoto.name,
-                            profileImagePreview: rootUrl + '/profile/download-file/' + profilePhoto.name
+                            profileImagePreview: rootUrl + '/download-file/' + profilePhoto.name
                         })
-
-                        //Download image
-                        // axios.post('http://localhost:3001/profile/download-file/' + profilePhoto.name)
-                        //     .then(response => {
-                        //         let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                        //         this.setState({
-                        //             profileImage: profilePhoto.name,
-                        //             profileImagePreview: imagePreview
-                        //         })
-
-                        //     }).catch((err) =>{
-                        //         console.log(err)
-                        //         alert("Error at change event image!!")
-                        //     });
                     }
                 });
         }
@@ -191,27 +136,14 @@ class OwnerProfile extends Component {
             var data = new FormData();
             data.append('photos', profilePhoto);
             axios.defaults.withCredentials = true;
-            axios.post(rootUrl + '/profile/upload-file', data)
+            axios.post(rootUrl + '/upload-file', data)
                 .then(response => {
                     if (response.status === 200) {
                         console.log('Rest Photo Name: ', profilePhoto.name);
                         this.setState({
                             restImage: profilePhoto.name,
-                            restImagePreview: rootUrl + '/profile/download-file/' + profilePhoto.name
+                            restImagePreview: rootUrl + '/download-file/' + profilePhoto.name
                         })
-                        //Download image
-                        // axios.post('http://localhost:3001/profile/download-file/' + profilePhoto.name)
-                        //     .then(response => {
-                        //         let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                        //         this.setState({
-                        //             restImage: profilePhoto.name,
-                        //             restImagePreview: imagePreview
-                        //         })
-
-                        //     }).catch((err) =>{
-                        //         console.log(err)
-                        //         alert("Error at change event image!!")
-                        //     });
                     }
                 });
         }
@@ -227,13 +159,14 @@ class OwnerProfile extends Component {
         }
         // document.getElementById('userName').disabled = false;
         document.getElementById('userName').focus()
-        document.getElementById('password').style.display = "block";
+        // document.getElementById('password').style.display="block";
         // document.getElementById('btn-edit-profile').style.display="none";
         // document.getElementById('btn-submit-profile').style.visibility="visible";
         document.getElementById('btn-submit-profile').style.visibility = "visible";
         document.getElementById('btn-edit-restaurant').style.visibility = "hidden";
         document.getElementById('btn-cancel-profile').style.visibility = "visible";
         document.getElementById('btn-edit').style.visibility = "hidden";
+        document.getElementById('profileImage').style.visibility = "visible";
     }
 
     editRestaurant() {
@@ -248,70 +181,52 @@ class OwnerProfile extends Component {
         document.getElementById('btn-submit-restaurant').style.visibility = "visible";
         document.getElementById('btn-cancel-restaurant').style.visibility = "visible";
         document.getElementById('btn-edit').style.visibility = "hidden";
+        document.getElementById('restImages').style.visibility = "visible";
     }
 
-    submitProfile = (details) => {
+    submitProfile = async (details) => {
         console.log("Inside profile update", details);
         const data = {
-            userPassword: details.password,
+            userEmail: details.email,
+            // userPassword : details.password,
             userName: details.userName,
             userPhone: details.userPhone,
             userAddress: details.userAddress,
             userZip: details.userZip,
             userImage: this.state.profileImage,
-            userEmail: localStorage.getItem('userEmail')
+            restName: this.props.profileStateStore.result.restName,
+            restDesc: this.props.profileStateStore.result.restDesc,
+            restAddress: this.props.profileStateStore.result.restAddress,
+            restZip: this.props.profileStateStore.result.restZip,
+            restPhone: this.props.profileStateStore.result.restPhone,
+            restImage: this.props.profileStateStore.result.restImage
         }
-        //set the with credentials to true
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        axios.put(rootUrl + '/profile/updateprofile', data)
-            .then(response => {
-                console.log("inside success")
-                console.log("Status Code : ", response.status);
-                if (response.status === 200) {
-                    console.log("success", response)
-                    // alert("success")
-                    // console.log(response)
-                }
-            })
-            .catch(error => {
-                console.log("In error");
-                console.log(error);
-                alert("Update failed! Please try again")
-            })
+        await this.props.updateProfile(data);
         this.savechanges()
     }
 
-    submitRestaurant = (details) => {
+    submitRestaurant = async (details) => {
         console.log("Inside restaurant submit", details);
         console.log("rest image", this.state.restImage)
         const data = {
+            userEmail: localStorage.getItem("userEmail"),
+            userName: this.props.profileStateStore.result.userName,
+            userEmail: this.props.profileStateStore.result.userEmail,
+            // password: this.props.profileStateStore.result.password,
+            userPhone: this.props.profileStateStore.result.userPhone,
+            userImage: this.props.profileStateStore.result.profileImage,
+
             restName: details.restName,
             restDesc: details.restDesc,
             restAddress: details.restAddress,
             restZip: details.restZip,
             restPhone: details.restPhone,
-            restImage: this.state.restImage,
-            userEmail: localStorage.getItem('userEmail')
+            restImage: this.state.restImage
         }
         //set the with credentials to true
         axios.defaults.withCredentials = true;
         //make a post request with the user data
-        axios.put(rootUrl + '/restaurant/updaterestdetails', data)
-            .then(response => {
-                console.log("inside success")
-                console.log("Status Code : ", response.status);
-                if (response.status === 200) {
-                    console.log("success", response)
-                    alert("success")
-                    // console.log(response)
-                }
-            })
-            .catch(error => {
-                console.log("In error");
-                console.log(error);
-                alert("Update failed! Please try again")
-            })
+        await this.props.updateProfile(data)
         this.savechanges()
     }
 
@@ -337,24 +252,22 @@ class OwnerProfile extends Component {
         document.getElementById('btn-submit-restaurant').style.visibility = "hidden";
         document.getElementById('btn-cancel-restaurant').style.visibility = "hidden";
         document.getElementById('btn-edit').style.visibility = "visible";
+        document.getElementById('profileImage').style.visibility = "hidden";
+        document.getElementById('restImages').style.visibility = "hidden";
     }
 
     render() {
-        let profileImageData = <img src="https://img.freepik.com/free-icon/user-filled-person-shape_318-74922.jpg?size=338c&ext=jpg" alt="logo" />
+        let profileImageData = <img src={user_image} alt="logo" />
+        console.log("final profile image check", this.state.profileImagePreview)
         if (this.state.profileImagePreview) {
             profileImageData = <img src={this.state.profileImagePreview} alt="logo" />
         }
-        let restImageData = <img src="https://mk0tarestaurantt3wcn.kinstacdn.com/wp-content/uploads/2018/01/premiumforrestaurants_0.jpg" alt="logo" />
+        let restImageData = <img src={rest_image} alt="logo" />
         if (this.state.restImagePreview) {
             restImageData = <img src={this.state.restImagePreview} alt="logo" />
         }
-        let redirectVar = null;
-        if (!cookie.load('cookie')) {
-            redirectVar = <Redirect to="/login" />
-        }
         return (
             <div className="row">
-                {redirectVar}
                 <div className="col-md-7">
                     <span className="font-weight-bold">Your account</span>
                     &nbsp;&nbsp;&nbsp;
@@ -461,7 +374,7 @@ class OwnerProfile extends Component {
                                     />
                                 </div>
 
-                                <div className="form-group">
+                                <div className="form-group" id="profileImage">
                                     <label htmlFor="ProfileImage"><strong>Profile Image : </strong></label><br />
                                     <input type="file" name="ProfileImage" id="ProfileImage" className="btn btn-sm photo-upload-btn" onChange={this.handleChange} />
                                 </div>
@@ -600,7 +513,7 @@ class OwnerProfile extends Component {
                                 </div>
                                 <br />
 
-                                <div className="form-group">
+                                <div className="form-group" id="restImages">
                                     <label htmlFor="RestImage"><strong>Restaurant Image : </strong></label><br />
                                     <input type="file" name="RestImage" id="restImage" className="btn btn-sm photo-upload-btn" onChange={this.handleChangeRest} />
                                 </div>
@@ -632,4 +545,17 @@ class OwnerProfile extends Component {
     }
 }
 
-export default OwnerProfile;
+// export default OwnerProfile;
+const mapStateToProps = (state) => ({
+    profileStateStore: state.profile
+})
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        getProfile: (data) => dispatch(getProfile(data)),
+        updateProfile: (data) => dispatch(updateProfile(data))
+    };
+}
+
+const updatedOwnerProfile = connect(mapStateToProps, mapDispatchToProps)(OwnerProfile)
+export default updatedOwnerProfile;

@@ -4,9 +4,11 @@ import swal from 'sweetalert';
 import rootUrl from '../config/settings';
 import axios from 'axios'
 import CartCard from './cartCard'
-import cookie from 'react-cookies';
 import './cartCardcss.css'
 import { Redirect } from 'react-router';
+// import cookie from 'react-cookies';
+import { connect } from 'react-redux';
+import { removeFromCart, placeOrder } from '../../redux/actions/customerActions'
 
 class Cart extends Component {
     constructor() {
@@ -17,19 +19,28 @@ class Cart extends Component {
         }
     }
     componentDidMount = () => {
-        const data = {
-            userEmail: localStorage.getItem('userEmail')
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/cart/showCart', data)
+        axios.post(rootUrl + '/showcart', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
-                console.log(response)
+                console.log("response", response)
+                console.log("response data", response.data);
+                console.log("--------------");
+
                 if (response.status === 200) {
-                    console.log(response.data);
-                    console.log("data received");
+                    console.log(typeof response.data);
+                    console.log("response.data", response.data);
+                    console.log("data received", response.data);
+
                     let itemsInCart = JSON.stringify(response.data)
+                    console.log("itemsincart", itemsInCart)
                     this.setState({
                         cartItems: itemsInCart
                     })
+                    console.log("state", this.state)
                 }
                 else {
                     console.log("Didn't fetch items data")
@@ -38,18 +49,21 @@ class Cart extends Component {
     }
 
     placeOrder = () => {
-        const data = {
-            userEmail: localStorage.getItem('userEmail')
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/orders/orderItems', data)
+        axios.post(rootUrl + '/orderItems', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log(response)
                 if (response.status === 200) {
                     setTimeout(() => {
-                        window.location.reload();
+                        // window.location.reload();
                     }, 2000);
                     swal("Success", "Your order has been placed", "success")
-
+                    this.props.placeOrder()
+                    this.props.history.push('/upcomingorders')
                     // this.props.history.push('/searchresults')
                 }
                 else {
@@ -57,29 +71,40 @@ class Cart extends Component {
                 }
             })
     }
-    deleteFromCart = (itemId) => {
+    deleteFromCart = (itemId, itemQuantity) => {
         console.log(itemId);
         const data = {
             itemId: itemId,
-
-            userEmail: localStorage.getItem('userEmail')
-
+            itemQuantity: itemQuantity,
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/cart/deleteCartItem', data)
+        let newCartItems = JSON.parse(this.state.cartItems);
+        console.log('before deleting', newCartItems);
+        axios.post(rootUrl + '/deleteCartItem', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log(response)
                 if (response.status === 200) {
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
+
                     swal("Success", "Item Deleted from Cart", "success")
 
-                    // this.props.history.push('/searchresults')
+                    for (let k = 0; k < newCartItems.length; k++) {
+                        if (newCartItems[k]._id == data.itemId && newCartItems[k].itemQuantity == data.itemQuantity) {
+                            newCartItems.splice(k, 1)
+                        }
+                    }
+                    this.props.removeFromCart(newCartItems)
+                    this.setState({
+                        cartItems: JSON.stringify(newCartItems)
+                    })
                 }
                 else {
                     console.log("Didn't fetch items data")
                 }
             })
+        console.log(newCartItems);
+
 
     }
     render() {
@@ -87,14 +112,15 @@ class Cart extends Component {
         if (localStorage.getItem("accountType") !== '1') {
             redirectVar = <Redirect to="/login" />
         }
-        
-        if (!cookie.load('cookie')) {
+        if (!localStorage.getItem('token')) {
             redirectVar = <Redirect to="/login" />
         }
         let cart = "";
         let route = '';
+        console.log("new state", this.state)
         if (this.state.cartItems) {
             route = JSON.parse(this.state.cartItems)
+            console.log("route", route)
         }
         let cartTotal = 0;
         if (route) {
@@ -139,4 +165,17 @@ class Cart extends Component {
     }
 }
 
-export default Cart;
+// export default Cart;
+const mapStateToProps = (state) => ({
+    cartStateStore: state.cart
+})
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        removeFromCart: (data) => dispatch(removeFromCart(data)),
+        placeOrder: (data) => dispatch(placeOrder(data))
+    };
+}
+
+const UpdatedCart = connect(mapStateToProps, mapDispatchToProps)(Cart)
+export default UpdatedCart;

@@ -7,18 +7,17 @@ const app = express.Router();
 app.post('/addToCart', (req, res) => {
     console.log("In addToCart post");
     console.log(req.body);
-    console.log(req.session);
   
   
-    if (req.session.userEmail) {
-        // if(req.session.userEmail){
+    if (req.body.userEmail) {
+        // if(req.body.userEmail){
         pool.getConnection((err, conn) => {
             if (err) {
                 console.log("Error while connecting to database");
                 res.status(500).end("Error while connecting to database");
             } else {
                 //query
-                const sql1 = `SELECT userEmail FROM cart WHERE userEmail= ${mysql.escape(req.session.userEmail)}`;
+                const sql1 = `SELECT userEmail FROM cart WHERE userEmail= ${mysql.escape(req.body.userEmail)}`;
                 console.log(sql1);
                 conn.query(sql1, (err, result) => {
                     if (err) {
@@ -41,7 +40,7 @@ app.post('/addToCart', (req, res) => {
                                     console.log(result1[0].itemName + "");
   
                                     const sql3 = `INSERT INTO cart (userEmail,itemId,restId,itemName,itemPrice,itemImage,itemQuantity,itemTotal)
-                                                VALUES (${mysql.escape(req.session.userEmail)},
+                                                VALUES (${mysql.escape(req.body.userEmail)},
                                                 ${req.body.itemId}, ${req.body.restId},
                                                 ${mysql.escape(result1[0].itemName)},
                                                 ${result1[0].itemPrice},
@@ -71,7 +70,7 @@ app.post('/addToCart', (req, res) => {
                         } else {
                             //user has previous orders
                             //check restId
-                            const sql4 = `SELECT DISTINCT restId FROM cart WHERE userEmail= ${mysql.escape(req.session.userEmail)}`;
+                            const sql4 = `SELECT DISTINCT restId FROM cart WHERE userEmail= ${mysql.escape(req.body.userEmail)}`;
                             console.log(sql4);
   
                             pool.getConnection((err, conn) => {
@@ -91,7 +90,7 @@ app.post('/addToCart', (req, res) => {
                                                 console.log(result2);
                                                 if (result2[0].restId === req.body.restId) {
                                                     //check itemId
-                                                    const sql5 = `SELECT * FROM cart WHERE userEmail = ${mysql.escape(req.session.userEmail)} AND
+                                                    const sql5 = `SELECT * FROM cart WHERE userEmail = ${mysql.escape(req.body.userEmail)} AND
                                                                    restId = ${req.body.restId}`;
                                                     console.log(sql5);
                                                     conn.query(sql5, (err, result) => {
@@ -118,7 +117,7 @@ app.post('/addToCart', (req, res) => {
                                                             if (hasItemId) {
                                                                 const sql6 = `UPDATE cart set itemQuantity= ${req.body.itemQuantity} + ${result[0].itemQuantity},
                                                                                 itemTotal = ${req.body.itemTotal} + ${result[0].itemTotal}
-                                                                                WHERE userEmail= ${mysql.escape(req.session.userEmail)} AND
+                                                                                WHERE userEmail= ${mysql.escape(req.body.userEmail)} AND
                                                                                 restId = ${req.body.restId} AND 
                                                                                 itemId = ${req.body.itemId}`;
   
@@ -126,7 +125,7 @@ app.post('/addToCart', (req, res) => {
                                                                 conn.query(sql6, (err, result) => {
                                                                     if (err) {
                                                                         console.log(err);
-                                                                        // req.session.save();
+                                                                        // req.body.save();
                                                                         res.status(500).end("Error connecting to cart table");
                                                                     } else {
                                                                         console.log("Successfully updated cart");
@@ -147,7 +146,7 @@ app.post('/addToCart', (req, res) => {
                                                                         //got item details
                                                                         console.log(result);
                                                                         const sql8 = `INSERT INTO cart (userEmail,itemId,restId,itemName,itemPrice,itemImage,itemQuantity,itemTotal)
-                                                                            VALUES (${mysql.escape(req.session.userEmail)},
+                                                                            VALUES (${mysql.escape(req.body.userEmail)},
                                                                                     ${req.body.itemId}, ${req.body.restId}, 
                                                                                     ${mysql.escape(result[0].itemName)},
                                                                                     ${result[0].itemPrice}, ${mysql.escape(result[0].itemImage)},
@@ -191,9 +190,9 @@ app.post('/addToCart', (req, res) => {
 app.post('/showCart', (req, res) => {
     console.log("In show cart");
     console.log(req.body);
-    console.log(req.session.userEmail);
-    if (req.session.userEmail) {
-        // if(req.session.userEmail){
+    console.log(req.body.userEmail);
+    if (req.body.userEmail) {
+        // if(req.body.userEmail){
         console.log("user is set");
   
         pool.getConnection((err, conn) => {
@@ -205,8 +204,8 @@ app.post('/showCart', (req, res) => {
                 res.end("Error while connecting to database");
             } else {
                 //query
-                const sql = `SELECT * FROM cart WHERE userEmail= ${mysql.escape(req.session.userEmail)}`;
-                // const sql = `SELECT * FROM cart WHERE userEmail= ${mysql.escape(req.session.userEmail)}`;
+                const sql = `SELECT * FROM cart WHERE userEmail= ${mysql.escape(req.body.userEmail)}`;
+                // const sql = `SELECT * FROM cart WHERE userEmail= ${mysql.escape(req.body.userEmail)}`;
                 console.log(sql);
   
                 conn.query(sql, (err, result) => {
@@ -228,8 +227,8 @@ app.post('/deleteCartItem', (req, res) => {
     console.log("In deleteCartItem");
     console.log(req.body);
   
-    if (req.session.userEmail) {
-        // if(req.session.userEmail){
+    if (req.body.userEmail) {
+        // if(req.body.userEmail){
         pool.getConnection((err, conn) => {
             if (err) {
                 console.log("Error while connecting to database");
@@ -239,7 +238,7 @@ app.post('/deleteCartItem', (req, res) => {
                 res.end("Error while connecting to database");
             } else {
                 //query
-                const sql = `DELETE FROM cart WHERE userEmail= ${mysql.escape(req.session.userEmail)}
+                const sql = `DELETE FROM cart WHERE userEmail= ${mysql.escape(req.body.userEmail)}
                             AND itemId= ${req.body.itemId}`;
                 console.log(sql);
                 conn.query(sql, (err, result) => {

@@ -6,8 +6,11 @@ import NavBar from "../Navbar/navbar";
 import axios from 'axios';
 // import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
-import swal from 'sweetalert';
-import rootUrl from "../config/settings";
+// import swal from 'sweetalert';
+// import rootUrl from "../config/settings";
+
+import { connect } from 'react-redux';
+import {customerSignup} from '../../redux/actions/signupAction'
 
 const phoneRegExp = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/
 const zipRegEx=/^[0-9]{5}(?:-[0-9]{4})?$/
@@ -45,45 +48,24 @@ submitSignup = (details) => {
     const data = {
         userName: details.userName,
         userEmail: details.email,
+        userImage: "none",
         userPassword :  details.password,
         userPhone: details.userPhone,
         userAddress: details.userAddress,
         userZip: details.userZip,
         accountType: 1
         }
-    //set the with credentials to true
-    axios.defaults.withCredentials = true;
-    //make a post request with the user data
-    axios.post(rootUrl+'/customerSignup',data)
-        .then(response => {
-            console.log("inside success" )
-            console.log("Status Code : ",response.status);
-            if(response.status === 200){
-                this.setState({
-                    authFlag : true
-                })
-            // alert("Signup successfull! You can now login in to your account!")
-            swal("Successful","You can now login to your account!", "success");
-            }
-            console.log(this.state.authFlag)
-        })
-        .catch(error => {
-            console.log("In error");
-            this.setState({
-                authFlag : false
-            });
-            alert("ERROR!!!")
-            console.log(error);
-            // alert("User credentials not valid. Please try again!");
-        })
+    this.props.customerSignup(data)
 }
 
 
   render() {
       let redirectVar=null;
-      if(this.state.authFlag===true){
-            redirectVar=<Redirect to="/"/>  
-        }
+      if(this.props.signupStateStore.result){
+        if(this.props.signupStateStore.result.isNewUserCreated===true){
+              redirectVar=<Redirect to="/"/>   
+        }   
+        }  
     return (
             <div> 
                 {redirectVar}      
@@ -243,6 +225,18 @@ submitSignup = (details) => {
 }}
 
 
-export default CustomerSignUpForm;
+// export default CustomerSignUpForm;
+const mapStateToProps = (state) => ({
+    signupStateStore: state.signup
+})
+
+const mapDispatchToProps=(dispatch)=>{
+return {
+    customerSignup: (data) => dispatch(customerSignup(data))
+};
+}
+
+const updatedCustomerSignUp    = connect(mapStateToProps, mapDispatchToProps)(CustomerSignUpForm)
+export default updatedCustomerSignUp;
 
 

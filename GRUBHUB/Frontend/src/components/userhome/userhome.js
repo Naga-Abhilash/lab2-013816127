@@ -6,10 +6,12 @@ import Background from '../../images/homeBackground.jpg';
 import axios from 'axios'
 import rootUrl from '../config/settings';
 import swal from 'sweetalert'
+import { connect } from 'react-redux';
+import { searchItem } from '../../redux/actions/customerActions'
 
 var sectionStyle = {
     width: "100%",
-    height: "700px",
+    height: "650px",
     backgroundImage: `url(${Background})`
 };
 
@@ -50,27 +52,34 @@ class Home extends Component {
 
         const data = {
             itemName: this.state.itemSearch,
-            userEmail: localStorage.getItem('userEmail')
+            userEmail: localStorage.getItem("userEmail")
         }
         console.log(data.itemName)
-        axios.post(rootUrl + '/restaurant/restaurantsbyItemName', data)
+        axios.post(rootUrl + '/restaurantsbyItemName', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log(response.status);
                 if (response.status === 200) {
                     let restDetails = JSON.stringify(response.data)
                     console.log(response.data)
                     if (Object.keys(response.data).length > 0) {
+                        var resultData = {
+                            restDetails: restDetails,
+                            itemName: data.itemName
+                        }
                         localStorage.setItem("restaurantResults", restDetails)
                         localStorage.setItem("itemName", data.itemName);
-                        this.props.history.push('/searchresults')
                     }
                     console.log("response is 200. data received")
+                    this.props.searchItem(resultData)
+                    this.props.history.push('/searchresults')
                 }
-                
+
             }).catch((err) => {
                 if (err) {
                     if (err === 401) {
-                       
+
                         console.log("Error messagw", err.response.status);
                         swal(err.response.data)
                     }
@@ -84,21 +93,11 @@ class Home extends Component {
 
 
     render() {
-        // for (let i = 0; i < localStorage.length; i++) {
-        //     let k = localStorage.key(i);
-        //     console.log(k)
-        // }
 
         let redirectVar = null
-        if (localStorage.getItem('accountType')!=='1') {
+        if (localStorage.getItem('accountType') !== '1') {
             redirectVar = <Redirect to='/login' />
         }
-        // if(localStorage.getItem('restaurantResults')){
-        //     console.log("get item rest");
-
-        //     redirectVar = <Redirect to='/searchresults' />
-        // }
-
         return (
             <div >
                 {redirectVar}
@@ -126,4 +125,15 @@ class Home extends Component {
     }
 }
 
-export default Home;
+// export default Home;
+const mapStateToProps = (state) => ({
+    customerStateStore: state.customer
+})
+const mapDispatchToProps = (dispatch) => {
+    return {
+        searchItem: (data) => dispatch(searchItem(data))
+    }
+}
+
+const updatedHome = connect(mapStateToProps, mapDispatchToProps)(Home)
+export default updatedHome;

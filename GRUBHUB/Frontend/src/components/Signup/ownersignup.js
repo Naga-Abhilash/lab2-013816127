@@ -3,11 +3,14 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {Link} from "react-router-dom"
 import NavBar from "../Navbar/navbar";
-import axios from 'axios';
+// import axios from 'axios';
 // import cookie from 'react-cookies';
-import swal from 'sweetalert'
 import {Redirect} from 'react-router';
-import rootUrl from "../config/settings";
+// import rootUrl from "../config/settings";
+// import swal from 'sweetalert';
+
+import { connect } from 'react-redux';
+import {ownerSignup} from '../../redux/actions/signupAction'
 
 const phoneRegExp = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/
 const zipRegEx=/^[0-9]{5}(?:-[0-9]{4})?$/
@@ -49,51 +52,30 @@ class OwnerSignUpForm extends Component {
     }
 
 submitSignup = (details) => {
-    console.log("Inside submit login",details);
+    console.log("Inside submit signup",details);
     const data = {
         userName: details.userName,
+        userImage: "none",
         userEmail: details.email,
         userPassword :  details.password,
         userPhone: details.userPhone,
         userAddress: "default",
         userZip: "default",
         restAddress:details.restAddress,
+        restImage: "none",
         restDesc:details.restDesc,
         restName:details.restName,
         restPhone:details.restPhone,
         restZip:details.restZip,
         accountType: 2
         }
-    //set the with credentials to true
-    axios.defaults.withCredentials = true;
-    //make a post request with the user data
-    axios.post(rootUrl+'/ownerSignup',data)
-        .then(response => {
-            console.log("inside success" )
-            console.log("Status Code : ",response.status);
-            if(response.status === 200){
-                this.setState({
-                    authFlag : true
-                })
-            swal("Signup successfull!"," You can now login in to your account!", "success")
-            }
-            console.log(this.state.authFlag)
-        })
-        .catch(error => {
-            console.log("In error");
-            this.setState({
-                authFlag : false
-            });
-            swal("ERROR!!!","Failed to signup owner" ,"error")
-            console.log(error);
-            // alert("User credentials not valid. Please try again!");
-        })
+        this.props.ownerSignup(data)
 }
   render() {
     let redirectVar=null;
     if(this.state.authFlag===true){
-          redirectVar=<Redirect to="/"/>   
-    }   
+        redirectVar = <Redirect t0="/"/>
+    }
     return (
             <div>
               {redirectVar}    
@@ -301,6 +283,18 @@ submitSignup = (details) => {
 }}
 
 
-export default OwnerSignUpForm;
+// export default OwnerSignUpForm;
+const mapStateToProps = (state) => ({
+    signupStateStore: state.signup
+})
+
+const mapDispatchToProps=(dispatch)=>{
+return {
+    ownerSignup: (data) => dispatch(ownerSignup(data))
+};
+}
+
+const updatedOwnerSignUp    = connect(mapStateToProps, mapDispatchToProps)(OwnerSignUpForm)
+export default updatedOwnerSignUp;
 
 

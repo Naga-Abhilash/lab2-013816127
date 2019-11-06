@@ -3,7 +3,9 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from 'axios';
 import rootUrl from "../config/settings";
-import swal from 'sweetalert'
+import swal from "sweetalert";
+// import cookie from 'react-cookies';
+import { Redirect } from 'react-router';
 
 
 const Price = /^\d+(,\d{3})*(\.\d{1,2})?$/
@@ -31,7 +33,8 @@ class AddItems extends Component {
             itemDesc: "",
             cuisineName: "",
             itemImage: "",
-            itemImagePreview: ""
+            itemImagePreview: "",
+            redirect: null
         }
     }
 
@@ -45,28 +48,17 @@ class AddItems extends Component {
             var data = new FormData();
             data.append('photos', profilePhoto);
             axios.defaults.withCredentials = true;
-            axios.post(rootUrl + '/profile/upload-file', data)
+            console.log("data upload file", data)
+            axios.post(rootUrl + '/upload-file', data)
                 .then(response => {
                     if (response.status === 200) {
                         console.log('Item Photo Name: ', profilePhoto.name);
                         this.setState({
                             itemImage: profilePhoto.name,
-                            itemImagePreview: rootUrl + '/profile/download-file/' + profilePhoto.name
+                            itemImagePreview: rootUrl + '/download-file/' + profilePhoto.name
                         })
-                        //Download image
-                        // axios.post('http://localhost:3001/profile/download-file/' + profilePhoto.name)
-                        //     .then(response => {
-                        //         let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                        //         this.setState({
-                        //             itemImage: profilePhoto.name,
-                        //             itemImagePreview: imagePreview
-                        //         })
-
-                        //     }).catch((err) =>{
-                        //         console.log(err)
-                        //         alert("Error at change event image!!")
-                        //     });
                     }
+                    console.log("this.state", this.state)
                 });
         }
     }
@@ -81,37 +73,58 @@ class AddItems extends Component {
             itemDesc: details.itemDesc,
             cuisineName: details.cuisineName,
             itemImage: this.state.itemImage,
-            userEmail: localStorage.getItem('userEmail')
+            userEmail: localStorage.getItem("userEmail")
         }
         //set the with credentials to true
         axios.defaults.withCredentials = true;
         //make a post request with the user data
-        axios.post(rootUrl + '/restaurant/additem', data)
+        axios.post(rootUrl + '/additem', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
                 if (response.status === 200) {
                     console.log("success", response)
-                    swal("done","Iteam successfully added","success")
-                    window.location.reload();
+                    setTimeout(() => {
+                        // window.location.reload();
+                    }, 2000);
+                    swal("Success", "Item added to the menu", "success");
+                    this.setState({
+                        redirect: <Redirect to="/menu" />
+                    })
+                    // this.props.history.push('/menu')
+                    // alert("success")
+
+                    // window.location.reload();
                     // console.log(response)
                 }
             })
             .catch(error => {
                 console.log("In error");
                 console.log(error);
-                swal("Failed","Update failed! Please try again", "error")
+                swal("Oops...", "Something went wrong! Please try again later", "error");
+                // alert("Update failed! Please try again")
             })
     }
 
 
     render() {
+        let redirectVar;
+        if (localStorage.getItem("accountType") !== '2') {
+            redirectVar = <Redirect to="/login" />
+        }
+        if (!localStorage.getItem('token')) {
+            redirectVar = <Redirect to="/login" />
+        }
         let itemImageData = <img src="https://mk0tarestaurantt3wcn.kinstacdn.com/wp-content/uploads/2018/01/premiumforrestaurants_0.jpg" alt="logo" />
         if (this.state.itemImagePreview) {
             itemImageData = <img src={this.state.itemImagePreview} alt="logo" />
         }
         return (
             <div className="row">
+                {redirectVar}
+                {this.state.redirect}
                 <div className="col-md-7">
                     <span className="font-weight-bold">Add Item</span>
                     {/* <button className="btn btn-link" id="btn-edit" onClick={this.edit}>Edit</button> */}

@@ -18,10 +18,10 @@ class Home extends Component {
         super()
         this.state = {
             itemSearch: "",
-            restResults:[
+            restResults: [
 
             ],
-            cuisineResults:[
+            cuisineResults: [
 
             ]
         }
@@ -40,11 +40,11 @@ class Home extends Component {
         // if(this.state.itemSearch.length >=2){
         //     document.getElementById("searchButton").disabled = false;
         // }
-        
+
     }
 
 
-    submitSearch = async (e) =>{
+    submitSearch = async (e) => {
         e.preventDefault()
 
         const data = {
@@ -53,19 +53,19 @@ class Home extends Component {
         }
         console.log(data.itemName)
         axios.post(rootUrl + '/restaurantsbyItemName', data)
-        .then(response => {
+            .then(response => {
                 console.log(response);
                 if (response.status === 200) {
                     let restDetails = JSON.stringify(response.data)
                     console.log(response.data)
-                    if (Object.keys(response.data).length>0){
+                    if (Object.keys(response.data).length > 0) {
                         sessionStorage.setItem("restaurantResults", restDetails)
-                        sessionStorage.setItem("itemName",data.itemName);
+                        sessionStorage.setItem("itemName", data.itemName);
                         this.props.history.push('/searchresults')
                     }
                     console.log("response is 200. data received")
                 }
-                else{
+                else {
                     console.log("response is 400. data not received")
                 }
             })
@@ -77,39 +77,39 @@ class Home extends Component {
         //     let k = localStorage.key(i);
         //     console.log(k)
         // }
-        
+
         // let redirectVar = null
         // if (!localStorage.getItem('email')) {
         //     redirectVar = <Redirect to='/login' />
         // }
         // if(sessionStorage.getItem('restaurantResults')){
         //     console.log("get item rest");
-            
+
         //     redirectVar = <Redirect to='/searchresults' />
         // }
-        
+
         return (
             <div >
                 {/* {redirectVar} */}
-                
+
                 <Navbar />
-                <div style={ sectionStyle } >
-                <div className="centerit">
-                    <div className="col-12 col-md-10 col-lg-8">
-                        <form className="card card-sm">
-                            <div className="card-body row no-gutters align-items-center">
-                                <div >
+                <div style={sectionStyle} >
+                    <div className="centerit">
+                        <div className="col-12 col-md-10 col-lg-8">
+                            <form className="card card-sm">
+                                <div className="card-body row no-gutters align-items-center">
+                                    <div >
+                                    </div>
+                                    <div className="col">
+                                        <input onChange={this.searchHandle} name="searchbar" className="form-control form-control-lg form-control-borderless" type="text" placeholder="Search food items" />
+                                    </div>
+                                    <div >
+                                        <button id="searchButton" onClick={this.submitSearch} className="btn btn-lg btn-success"  >Search</button>
+                                    </div>
                                 </div>
-                                <div className="col">
-                                    <input onChange={this.searchHandle} name = "searchbar" className="form-control form-control-lg form-control-borderless" type="text" placeholder="Search food items" />
-                                </div>
-                                <div >
-                                    <button id = "searchButton" onClick={this.submitSearch} className="btn btn-lg btn-success"  >Search</button>
-                                </div>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         );

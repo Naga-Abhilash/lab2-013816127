@@ -5,11 +5,12 @@ import * as Yup from "yup";
 import axios from 'axios';
 import '../../App.css';
 import rootUrl from "../config/settings";
-import { Redirect } from 'react-router';
-import cookie from 'react-cookies';
+import swal from "sweetalert"
+import user_image from "../../images/user_defaultimage.png"
 // import cookie from 'react-cookies';
 // import {Redirect} from 'react-router';
-
+import { connect } from 'react-redux';
+import { getProfile, updateProfile } from '../../redux/actions/profileAction'
 
 
 const phoneRegExp = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/
@@ -33,9 +34,6 @@ const SignUpSchema = Yup.object().shape({
         .matches(zipRegEx, "Zip code is not valid")
         .required("ZIP code is required")
 })
-var colors = {
-    color: "balck"
-}
 
 class UserProfile extends Component {
     constructor(props) {
@@ -48,8 +46,8 @@ class UserProfile extends Component {
             userPhone: "5555555555",
             userZip: "99999",
             profileImage: "",
-            profileImagePreview: undefined
-
+            profileImagePreview: undefined,
+            isUpdated: false
             // restName: "xyz",
             // restAdr:"Sample Resto Address",
             // restZip: "55555",
@@ -61,54 +59,28 @@ class UserProfile extends Component {
     }
 
 
-    componentDidMount() {
-        console.log("Inside get profile after component did mount");
-        //set the with credentials to true
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        const data = {
-            userEmail: localStorage.getItem('userEmail')
+    async componentDidMount() {
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/profile/getprofile', data)
-            .then(response => {
-                console.log("inside success")
-                console.log("Status Code : ", response.status);
-                if (response.status === 200) {
-                    console.log("response", response.data)
-                    this.setState({
-                        userEmail: response.data.userEmail,
-                        userName: response.data.userName,
-                        password: response.data.userPassword,
-                        userPhone: response.data.userPhone,
-                        userAdr: response.data.userAddress,
-                        userZip: response.data.userZip,
-                        profileImage: response.data.userImage
-                    });
-                    console.log("state updated", this.state)
-                    // if (response.data.userImage) {
-                    console.log("Profile image name", response.data.userImage);
-                    if (response.data.userImage) {
-                        this.setState({
-                            profileImagePreview: rootUrl + "/profile/download-file/" + response.data.userImage
-                        })
-                    }
-                    // }
-                    //Download image
-                    // axios.get('http://localhost:3001/profile/download-file/' + response.data.userImage)
-                    //     .then(response => {
-                    //         // let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                    //         this.setState({
-                    //             profileImagePreview: response.data
-                    //         })
-
-                    //     });
-                }
+        await this.props.getProfile(data)
+        console.log("Inside get profile after component did mount");
+        this.setState({
+            userEmail: this.props.profileStateStore.result.userEmail,
+            userName: this.props.profileStateStore.result.userName,
+            // password: this.props.profileStateStore.result.password,
+            userPhone: this.props.profileStateStore.result.userPhone,
+            userAdr: this.props.profileStateStore.result.userAdr,
+            userZip: this.props.profileStateStore.result.userZip,
+            profileImage: this.props.profileStateStore.result.profileImage
+        });
+        console.log("state updated", this.state)
+        console.log("Profile image name", this.props.profileStateStore.result.profileImage);
+        if (this.props.profileStateStore.result.profileImage) {
+            this.setState({
+                profileImagePreview: rootUrl + "/download-file/" + this.props.profileStateStore.result.profileImage
             })
-            .catch(error => {
-                console.log("In error");
-                console.log(error);
-                // alert("User credentials not valid. Please try again!");
-            })
+        }
     }
 
     //handle change of profile image
@@ -122,27 +94,17 @@ class UserProfile extends Component {
             var data = new FormData();
             data.append('photos', profilePhoto);
             axios.defaults.withCredentials = true;
-            axios.post(rootUrl + '/profile/upload-file', data)
+            axios.post(rootUrl + '/upload-file', data)
                 .then(response => {
                     if (response.status === 200) {
                         console.log('Profile Photo Name: ', profilePhoto.name);
-                        this.setState({
-                            profileImage: profilePhoto.name,
-                            profileImagePreview: rootUrl + "/profile/download-file/" + profilePhoto.name
-                        })
-                        //Download image
-                        // axios.post('http://localhost:3001/profile/download-file/' + profilePhoto.name)
-                        //     .then(response => {
-                        //         let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                        //         this.setState({
-                        //             profileImage: profilePhoto.name,
-                        //             profileImagePreview: imagePreview
-                        //         })
+                        if (profilePhoto.name) {
+                            this.setState({
+                                profileImage: profilePhoto.name,
+                                profileImagePreview: rootUrl + "/download-file/" + profilePhoto.name
+                            })
+                        }
 
-                        //     }).catch((err) =>{
-                        //         console.log(err)
-                        //         alert("Error at change event image!!")
-                        //     });
                     }
                 });
         }
@@ -156,44 +118,29 @@ class UserProfile extends Component {
         }
         // document.getElementById('userName').disabled = false;
         document.getElementById('userName').focus()
-        document.getElementById('password').style.display = "block";
+        // document.getElementById('password').style.display="block";
         // document.getElementById('btn-edit-profile').style.display="none";
         document.getElementById('btn-submit-profile').style.visibility = "visible";
         document.getElementById('btn-cancel-profile').style.visibility = "visible";
         document.getElementById('btn-edit').style.visibility = "hidden";
+        document.getElementById('profileImage').style.visibility = "visible";
+
     }
 
 
-    submitProfile = (details) => {
+    submitProfile = async (details) => {
         console.log("Inside profile update", details);
         const data = {
-            userPassword: details.password,
+            userEmail: details.email,
+            // userPassword : details.password,
             userName: details.userName,
             userPhone: details.userPhone,
             userAddress: details.userAddress,
             userZip: details.userZip,
-            userImage: this.state.profileImage,
-            userEmail: localStorage.getItem('userEmail')
+            userImage: this.state.profileImage
         }
-        //set the with credentials to true
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        axios.put(rootUrl + '/profile/updateprofile', data)
-            .then(response => {
-                console.log("inside success")
-                console.log("Status Code : ", response.status);
-                if (response.status === 200) {
-                    console.log("success", response)
-                    // alert("success")
-                    // console.log(response)
-                }
-            })
-            .catch(error => {
-                console.log("In error");
-                console.log(error);
-                alert("Update failed! Please try again")
-            })
-        this.savechanges()
+        await this.props.updateProfile(data);
+        this.savechanges();
     }
 
     savechanges() {
@@ -208,28 +155,24 @@ class UserProfile extends Component {
         document.getElementById('btn-submit-profile').style.visibility = "hidden";
         document.getElementById('btn-cancel-profile').style.visibility = "hidden";
         document.getElementById('btn-edit').style.visibility = "visible";
+        document.getElementById('profileImage').style.visibility = "hidden";
+
     }
 
 
     render() {
-        let redirectVar = null;
-        if (!cookie.load('cookie')) {
-            redirectVar = <Redirect to="/login" />
-        }
         console.log("profile image preview", this.state.profileImagePreview)
-        let profileImageData = <img src="https://img.freepik.com/free-icon/user-filled-person-shape_318-74922.jpg?size=338c&ext=jpg" alt="logo" />
+        let profileImageData = <img src={user_image} alt="logo" />
         if (this.state.profileImagePreview) {
             profileImageData = <img src={this.state.profileImagePreview} alt="logo" />
         }
-
         return (
             <div className="row">
-                {redirectVar}
                 <div className="col-md-7">
                     <span className="font-weight-bold">Your account</span>
                     {/* <button className="btn btn-link" id="btn-edit" onClick={this.edit}>Edit</button> */}
                     &nbsp;&nbsp;&nbsp;
-                <a className="nav-link-inline" id="btn-edit" style={colors} href="#edit" onClick={this.editProfile}>Edit</a>
+                <a className="nav-link-inline" id="btn-edit" href="#edit" onClick={this.editProfile}>Edit</a>
                     <Formik
                         enableReinitialize
                         initialValues={
@@ -375,8 +318,8 @@ class UserProfile extends Component {
                                 </div>
 
                                 <br />
-                                <div className="form-group">
-                                    <label htmlFor="ProfileImage"><strong>Profile Image : </strong></label><br />
+                                <div className="form-group" id="profileImage">
+                                    <label htmlFor="ProfileImage" ><strong>Profile Image : </strong></label><br />
                                     <input type="file" name="ProfileImage" id="ProfileImage" className="btn btn-sm photo-upload-btn" onChange={this.handleChange} />
                                 </div>
                                 <div className="formholder">
@@ -399,4 +342,18 @@ class UserProfile extends Component {
     }
 }
 
-export default UserProfile
+// export default UserProfile
+// export default UserProfile;
+const mapStateToProps = (state) => ({
+    profileStateStore: state.profile
+})
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        getProfile: (data) => dispatch(getProfile(data)),
+        updateProfile: (data) => dispatch(updateProfile(data))
+    };
+}
+
+const UpdatedUserProfile = connect(mapStateToProps, mapDispatchToProps)(UserProfile)
+export default UpdatedUserProfile;

@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 // import {Link} from "react-router-dom";
 import NavBar from "../Navbar/navbar";
-import Profile from "../profile/Profile";
+import Profile from "../profile/profile";
 import Pastorders from "../Orders/pastorders";
 import Upcomingorders from "../Orders/upcomingorders"
-import cookie from 'react-cookies';
+// import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
 
 class Account extends Component {
@@ -40,7 +40,7 @@ class Account extends Component {
 
     render() {
         let redirectVar = null;
-        if (!cookie.load('cookie')) {
+        if (!localStorage.getItem('token')) {
             redirectVar = <Redirect to="/login" />
         }
         let selectedView = null
@@ -79,14 +79,8 @@ class Account extends Component {
                                         <li className="nav-item  text-left">
                                             <a className="nav-link font-weight-bold" id='profile' href="#/profile" onClick={this.onProfile}>Profile</a>
                                         </li>
-                                        {/* <li className="nav-item">
-                                    <a className="nav-link font-weight-bold" id='pastorders'  href="#/pastorders" onClick={this.onPastorders}>Past Orders</a>
-                                </li>
-                                <li className="nav-item">
-                                    <a className="nav-link font-weight-bold" id='upcomingorders' href="#/upcomingorders" onClick={this.onUpcomingorders}>Upcoming Orders</a>
-                                </li> */}
+
                                     </ul>
-                                    {/* <br/><br/><br/><br/><br/><br/><br/> */}
                                 </div>
                             </div>
                         </div>

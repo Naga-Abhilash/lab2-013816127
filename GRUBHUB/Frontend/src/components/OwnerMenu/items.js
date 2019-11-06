@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios';
 import rootUrl from "../config/settings";
 import swal from "sweetalert";
+import { Redirect } from 'react-router';
 
 // var images = require.context('../../../../backend/uploads/', true);
 
@@ -15,29 +16,33 @@ class Items extends Component {
         this.state = {
             items: [],
             sections: [],
-            photos: []
+            photos: [],
+            redirect: null
         }
         this.selectItems = this.selectItems.bind(this)
         this.deleteItem = this.deleteItem.bind(this)
     }
 
     componentDidMount() {
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
+        }
         // console.log("Inside get profile after component did mount");
         //set the with credentials to true
         axios.defaults.withCredentials = true;
         //make a post request with the user data
-        let data = {
-            userEmail: localStorage.getItem('userEmail')
-        }
-        axios.post(rootUrl + '/restaurant/allsections', data)
+        axios.post(rootUrl + '/allsections', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
                 if (response.status === 200) {
-                    console.log("response", response.data)
+                    console.log("response in item-sections", response.data)
                     this.setState({
                         sections: response.data
                     });
+                    console.log("this.state in items", this.state)
                 }
             })
             .catch(error => {
@@ -45,10 +50,12 @@ class Items extends Component {
                 console.log(error);
                 // alert("User credentials not valid. Please try again!");
             })
-        data = {
-            userEmail: localStorage.getItem('userEmail')
+        let data1 = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/restaurant/allitems', data)
+        axios.post(rootUrl + '/allitems', data1, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
@@ -58,74 +65,45 @@ class Items extends Component {
                         items: response.data
                     });
                     console.log("items", this.state.items)
-                    // var imageArr = [];
-                    // var photoList = this.state.items.itemImage;
-                    // for (let i = 0; i < this.state.items.length; i++) {
-                    // axios.post('http://localhost:3001/profile/download-file/' + this.state.items[i].itemImage)
-                    //     .then(response => {
-                    //         //console.log("Imgae Res : ", response);
-                    //         let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                    //         imageArr.push(imagePreview);
-                    //         const photoArr = this.state.photos.slice();
-                    //         photoArr[i] = imagePreview;
-                    //         this.setState({
-                    //             photos: photoArr
-                    //         });
-
-                    //         console.log('PhotoArr: ', photoArr);
-                    //         console.log('Photo State: ', this.state.photos);
-                    //     })
-                    // }
                 }
             })
             .catch(error => {
                 console.log("In error");
                 console.log(error);
+                swal("Oops...", "Something went wrong! Please try again later", "error");
                 // alert("User credentials not valid. Please try again!");
             })
     }
 
     selectItems(details) {
+        var itemsbasedonsection = []
         const data = {
             itemType: details,
-            userEmail: localStorage.getItem('userEmail')
+            userEmail: localStorage.getItem("userEmail")
         }
         console.log("data", data)
-        axios.post(rootUrl + '/restaurant/itemsbasedonsections', data)
+        axios.post(rootUrl + '/itemsbasedonsections', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
                 if (response.status === 200) {
-                    console.log("response", response.data)
+                    console.log("response", response.data[0].restaurant)
+                    response.data[0].restaurant.items.map((item) => {
+                        if (item.itemType === details) {
+                            itemsbasedonsection.push(item)
+                        }
+                    })
                     this.setState({
-                        items: response.data
+                        items: itemsbasedonsection
                     });
-                    // var imageArr = [];
-                    // // var photoList = this.state.items.itemImage;
-                    // for (let i = 0; i < this.state.items.length; i++) {
-                    //     console.log(this.state.items[i].itemImage)
-                    //     if(this.state.items[i].itemImage!= null || this.state.items[i].itemImage!= ""){
-                    //     axios.post('http://localhost:3001/profile/download-file/' + this.state.items[i].itemImage)
-                    //         .then(response => {
-                    //             //console.log("Imgae Res : ", response);
-                    //             let imagePreview = 'data:image/jpg;base64, ' + response.data;
-                    //             imageArr.push(imagePreview);
-                    //             const photoArr = this.state.photos.slice();
-                    //             photoArr[i] = imagePreview;
-                    //             this.setState({
-                    //                 photos: photoArr
-                    //             });
-
-                    //             console.log('PhotoArr: ', photoArr);
-                    //             console.log('Photo State: ', this.state.photos);
-                    //         })
-                    //     }
-                    // }
                 }
             })
             .catch(error => {
                 console.log("In error");
                 console.log(error);
+                swal("Oops...", "Something went wrong! Please try again later", "error");
                 // alert("User credentials not valid. Please try again!");
             })
 
@@ -134,22 +112,30 @@ class Items extends Component {
     deleteItem(details) {
         const data = {
             itemId: details,
-            userEmail: localStorage.getItem('userEmail')
+            userEmail: localStorage.getItem("userEmail")
+
         }
         console.log("data", data)
-        axios.put(rootUrl + '/restaurant/deleteitem', data)
+        axios.post(rootUrl + '/deleteitem', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
                 if (response.status === 200) {
                     console.log("response", response.data)
-                    swal("Done!", "Item deleted successfully", "Success")
-                    window.location.reload()
+                    // alert("success")
+                    swal("Deleted", "Item deleted from the menu", "error");
+                    // window.location.reload();
+                    // this.props.history.push('/menu')
+                    this.setState({
+                        redirect: <Redirect to="/menu" />
+                    })
                 }
             })
             .catch(error => {
                 console.log("In error");
-                console.log(error); 
+                console.log(error);
                 // alert("User credentials not valid. Please try again!");
             })
 
@@ -163,21 +149,21 @@ class Items extends Component {
             return (
                 <div className="col-md-4">
                     <div className="card">
-                        <button className="btn btn-outline-primary text-center text-dark" onClick={() => this.selectItems(section.itemType)}>{section.itemType}</button>
+                        <button className="btn btn-outline-primary text-center text-dark" onClick={() => this.selectItems(section)}>{section}</button>
                     </div>
                 </div>
             )
         })
         itemDetails = this.state.items.map((item, index) => {
             if (item.itemImage) {
-                var itemImagepreview = rootUrl + '/profile/download-file/' + item.itemImage
-                console.log("item image", itemImagepreview)
+                var profileImagePreview = rootUrl + '/download-file/' + item.itemImage
+                console.log("item image", profileImagePreview)
             }
             else {
-                var itemImageData = <img src='https://feedingsouthflorida.org/wp-content/uploads/2015/09/flow-of-food-plate.png' className="card-img-top img-responsive fit-image" alt="logo" />
+                var profileImageData = <img src='https://mk0tarestaurantt3wcn.kinstacdn.com/wp-content/uploads/2018/01/premiumforrestaurants_0.jpg' className="card-img-top img-responsive fit-image" alt="logo" />
             }
-            if (itemImagepreview) {
-                itemImageData = <img src={itemImagepreview} className="card-img-top img-responsive fit-image" alt="logo" />
+            if (profileImagePreview) {
+                profileImageData = <img src={profileImagePreview} className="card-img-top img-responsive fit-image" alt="logo" />
             }
             // let profileImageData = <img src={logo} className="card-img-top img-responsive fit-image" id="itemimage" alt="..."/>
             // if (this.state.photos[index]) {
@@ -192,7 +178,8 @@ class Items extends Component {
                     <div className="card">
                         <div className="card-body">
                             {/* <img src={logo} className="card-img-top img-responsive fit-image" id="itemimage" alt="..."/> */}
-                            {itemImageData}
+                            {profileImageData}
+                            {this.state.redirect}
                             {/* <img src={unknown} className="card-img-top img-responsive fit-image" id="card-img-top" alt="..." /> */}
                             <h5 className="card-title">{item.itemName}</h5>
                             {/* <h6 className="card-subtitle mb-2">Item Name: {item.itemName}</h6> */}
@@ -205,7 +192,7 @@ class Items extends Component {
                                 pathname: `/edititem`,
                                 item: item
                             }} className="btn btn-outline-primary">Edit</Link>&nbsp;&nbsp;&nbsp;
-                                <button className="btn btn-outline-danger" onClick={() => this.deleteItem(item.itemId)}>Delete</button>
+                                <button className="btn btn-outline-danger" onClick={() => this.deleteItem(item._id)}>Delete</button>
                         </div>
                     </div>
                 </div>

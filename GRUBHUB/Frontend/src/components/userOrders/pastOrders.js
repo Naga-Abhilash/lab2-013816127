@@ -15,10 +15,12 @@ class PastOrders extends Component {
     }
 
     componentDidMount = () => {
-        const data = {
-            userEmail: localStorage.getItem('userEmail')
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/orders/previousOrders', data)
+        axios.post(rootUrl + '/previousOrders', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log(response.data)
                 if (response.status === 200) {
@@ -33,6 +35,10 @@ class PastOrders extends Component {
             })
     }
     render() {
+        let redirectVar;
+        if (localStorage.getItem("accountType") !== '1') {
+            redirectVar = <Redirect to="/login" />
+        }
         let route = null
         let UniqueOdrer = ""
         let i = -1;
@@ -40,13 +46,6 @@ class PastOrders extends Component {
             console.log("in ");
 
             route = JSON.parse(this.state.userOrders)
-        }
-        let redirectVar = null;
-        if (!cookie.load('cookie')) {
-            redirectVar = <Redirect to="/login" />
-        }
-        if (localStorage.getItem("accountType") !== '1') {
-            redirectVar = <Redirect to="/login" />
         }
         console.log("route : ", typeof route);
 
@@ -65,18 +64,17 @@ class PastOrders extends Component {
             })
             return (
                 <div>
-                    <Navbar />
                     {redirectVar}
+                    <Navbar />
                     {UniqueOdrer}
-
                 </div>
             );
         }
         else {
             return (
                 <div>
-                    <Navbar />
                     {redirectVar}
+                    <Navbar />
                     <h6>You do not have any past orders</h6>
                 </div>
             )

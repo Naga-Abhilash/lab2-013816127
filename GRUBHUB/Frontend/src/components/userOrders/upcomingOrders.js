@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import axios from 'axios'
 import rootUrl from '../config/settings';
 import Navbar from '../Navbar/navbar';
-import UniqueOrders from './uniqueOrders'
+import UniqueOrders from './uniqueOrders';
 import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
-import draggable from 'react-draggable';
 
 class UpcomingOrders extends Component {
     constructor() {
@@ -16,10 +15,12 @@ class UpcomingOrders extends Component {
     }
 
     componentDidMount = () => {
-        const data = {
-            userEmail: localStorage.getItem('userEmail')
+        let data = {
+            userEmail: localStorage.getItem("userEmail")
         }
-        axios.post(rootUrl + '/orders/upcomingOrders', data)
+        axios.post(rootUrl + '/upcomingOrders', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log(response.data)
                 if (response.status === 200) {
@@ -33,11 +34,14 @@ class UpcomingOrders extends Component {
                 }
             })
     }
-    messageOwner = () => {
-        console.log("In message owner method ");
-
-    }
     render() {
+        let redirectVar;
+        if (localStorage.getItem("accountType") !== '1') {
+            redirectVar = <Redirect to="/login" />
+        }
+        // if (!cookie.load('cookie')) {
+        //     redirectVar = <Redirect to="/login" />
+        // }
         let route = null
         let UniqueOdrer = ""
         let i = -1;
@@ -46,14 +50,7 @@ class UpcomingOrders extends Component {
 
             route = JSON.parse(this.state.userOrders)
         }
-        let redirectVar = null;
-        if (!cookie.load('cookie')) {
-            redirectVar = <Redirect to="/login" />
-        }
-        if (localStorage.getItem("accountType") !== '1') {
-            redirectVar = <Redirect to="/login" />
-        }
-        console.log("route : ", typeof route);
+        console.log("route : ", route);
 
         if (route) {
             UniqueOdrer = route.map((order, index) => {
@@ -64,16 +61,15 @@ class UpcomingOrders extends Component {
                 return (
                     <UniqueOrders
                         key={i}
-                        
-                        messageowner={this.messageOwner.bind(this)}
+                        orderType="upcoming"
                         orderIndividual={order}
                     />
                 )
             })
             return (
                 <div>
-                    <Navbar />
                     {redirectVar}
+                    <Navbar />
                     {UniqueOdrer}
                 </div>
             );
@@ -81,8 +77,8 @@ class UpcomingOrders extends Component {
         else {
             return (
                 <div>
-                    <Navbar />
                     {redirectVar}
+                    <Navbar />
                     <h6>You do not have any Upcoming orders</h6>
                 </div>
             )

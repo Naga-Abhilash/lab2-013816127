@@ -4,7 +4,10 @@ import * as Yup from "yup";
 import axios from 'axios';
 import NavBar from "../Navbar/navbar";
 import rootUrl from "../config/settings";
-import swal from 'sweetalert'
+import swal from "sweetalert";
+// import cookie from 'react-cookies';
+import { Redirect } from 'react-router';
+
 
 
 const updateSectionSchema = Yup.object().shape({
@@ -17,7 +20,8 @@ class EditSection extends Component {
         super(props)
         console.log(props.location.section)
         this.state = {
-            itemType: props.location.section.itemType
+            itemType: props.location.section,
+            redirect: null
         }
         this.editSection = this.editSection.bind(this)
     }
@@ -26,9 +30,9 @@ class EditSection extends Component {
     editSection = (details) => {
         // console.log("Inside edit items",details);
         const data = {
-            itemType: details.itemType,
-            itemType1: this.state.itemType,
-            userEmail: localStorage.getItem('userEmail')
+            curritemType: details.itemType,
+            previtemType: this.state.itemType,
+            userEmail: localStorage.getItem("userEmail")
             //    itemImage:"",
             //    itemImagePreview:""
         }
@@ -36,27 +40,47 @@ class EditSection extends Component {
         //set the with credentials to true
         axios.defaults.withCredentials = true;
         //make a post request with the user data
-        axios.put(rootUrl + '/restaurant/updateSection', data)
+        axios.post(rootUrl + '/updateSection', data, {
+            headers: { "Authorization": localStorage.getItem("authToken") }
+        })
             .then(response => {
                 console.log("inside success")
                 console.log("Status Code : ", response.status);
                 if (response.status === 200) {
                     console.log("success", response)
-                    swal("success!","Updated successfully","success")
+                    // alert("success")
+                    setTimeout(() => {
+                        // window.location.reload();
+                    }, 2000);
+                    swal("Success", "Section details edited succesfully", "success");
+                    // this.props.history.push('/menu')
                     // console.log(response)
+                    this.setState({
+                        redirect: <Redirect to="/menu" />
+                    })
                 }
             })
             .catch(error => {
                 console.log("In error");
                 console.log(error);
-                swal("failed","Update failed! Please try again","error")
+                // alert("Update failed! Please try again")
+                swal("Oops...", "Something went wrong! Please try again later", "error");
             })
     }
 
     render() {
+        let redirectVar;
+        if (localStorage.getItem("accountType") !== '2') {
+            redirectVar = <Redirect to="/login" />
+        }
+        if (!localStorage.getItem('token')) {
+            redirectVar = <Redirect to="/login" />
+        }
 
         return (
             <div>
+                {redirectVar}
+                {this.state.redirect}
                 <NavBar />
                 <div className="col-md-7">
 
